@@ -748,7 +748,7 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
       {/* Breakpoint Rules Dialog */}
       {showBreakpointRules && (
-        <BreakpointRules isOpen={showBreakpointRules} onClose={() => setShowBreakpointRules(false)} />
+        <BreakpointRules onClose={() => setShowBreakpointRules(false)} />
       )}
 
       {/* Rewrite Rules Dialog */}

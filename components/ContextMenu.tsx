@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { LucideIcon } from 'lucide-react';
 
 export interface ContextMenuAction {
   label: string;
   onClick: () => void;
-  icon?: LucideIcon;
+  icon?: React.ComponentType<{ size?: string | number; className?: string }>;
   shortcut?: string;
   disabled?: boolean;
   separator?: boolean;

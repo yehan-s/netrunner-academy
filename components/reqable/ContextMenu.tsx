@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 export interface ContextMenuAction {
   label: string;
   onClick: () => void;
-  icon?: React.ComponentType<{ size?: number }>;
+  icon?: React.ComponentType<{ size?: string | number; className?: string }>;
   shortcut?: string;
 }
 

@@ -46,23 +46,23 @@ export const applyRewriteRules = (req: NetworkRequest): NetworkRequest => {
 
       case 'modify-request-header':
         if (rule.action.config.headerKey && rule.action.config.headerValue !== undefined) {
-          const headers = new Headers(modifiedReq.requestHeaders || []);
+          const headers = new Headers(Object.entries(modifiedReq.requestHeaders || {}));
           headers.set(rule.action.config.headerKey, rule.action.config.headerValue);
-          modifiedReq.requestHeaders = Array.from(headers.entries()).map(([k, v]) => `${k}: ${v}`);
+          modifiedReq.requestHeaders = Object.fromEntries(headers.entries());
         }
         break;
 
       case 'modify-response-header':
         if (rule.action.config.headerKey && rule.action.config.headerValue !== undefined) {
-          const headers = new Headers(modifiedReq.responseHeaders || []);
+          const headers = new Headers(Object.entries(modifiedReq.responseHeaders || {}));
           headers.set(rule.action.config.headerKey, rule.action.config.headerValue);
-          modifiedReq.responseHeaders = Array.from(headers.entries()).map(([k, v]) => `${k}: ${v}`);
+          modifiedReq.responseHeaders = Object.fromEntries(headers.entries());
         }
         break;
 
       case 'replace-response-body':
         if (rule.action.config.bodyContent !== undefined) {
-          modifiedReq.response = rule.action.config.bodyContent;
+          modifiedReq.responseBody = rule.action.config.bodyContent;
         }
         break;
     }

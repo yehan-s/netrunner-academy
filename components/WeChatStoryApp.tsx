@@ -91,7 +91,7 @@ export const WeChatStoryApp: React.FC<WeChatStoryAppProps> = ({ onOpenCase, onCl
   const [viewMode, setViewMode] = useState<ViewMode>('chat');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('group_incident');
   const [previewThreadId, setPreviewThreadId] = useState<string>(
-    STORY_THREADS[0]?.id || null,
+    STORY_THREADS[0]?.id || '',
   );
   
   // If no active thread, force story selection view
