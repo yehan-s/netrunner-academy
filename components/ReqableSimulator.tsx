@@ -15,6 +15,7 @@ import MapLocalRules from './reqable/MapLocalRules';
 import GatewayRules from './reqable/GatewayRules';
 import MirrorRules from './reqable/MirrorRules';
 import HighlightRules, { getHighlightColor } from './reqable/HighlightRules';
+import { ScriptEditor } from './reqable/ScriptEditor';
 import {
   Play, Shield, Trash2, Search, Layers, PenTool, Settings, Code, Highlighter,
   ChevronRight, Star, Bookmark, Globe, FolderTree,
@@ -119,6 +120,9 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
   // Mirror Rules Dialog State
   const [showMirrorRules, setShowMirrorRules] = useState(false);
+
+  // Script Editor Dialog State
+  const [showScriptEditor, setShowScriptEditor] = useState(false);
 
   // Highlight Rules Dialog State
   const [showHighlightRules, setShowHighlightRules] = useState(false);
@@ -594,8 +598,11 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
           <div className="flex-1 flex flex-col bg-[#1e1e1e] min-h-0">
             <div className="h-12 bg-[#252526] border-b border-[#333] flex items-center px-4 shrink-0 justify-between">
               <span className="font-bold text-[#cccccc] text-sm">Scripting Console</span>
-              <button className="px-3 py-1 bg-[#333] hover:bg-[#444] text-xs text-white rounded border border-[#444] flex items-center gap-2">
-                <Plus size={12} /> New Script
+              <button
+                onClick={() => setShowScriptEditor(true)}
+                className="px-3 py-1 bg-[#333] hover:bg-[#444] text-xs text-white rounded border border-[#444] flex items-center gap-2"
+              >
+                <Plus size={12} /> Manage Scripts
               </button>
             </div>
             <div className="p-4 flex-1 overflow-auto">
@@ -769,6 +776,11 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
       {/* Mirror Rules Dialog */}
       {showMirrorRules && (
         <MirrorRules onClose={() => setShowMirrorRules(false)} />
+      )}
+
+      {/* Script Editor Dialog */}
+      {showScriptEditor && (
+        <ScriptEditor onClose={() => setShowScriptEditor(false)} />
       )}
 
       {/* Highlight Rules Dialog */}

@@ -22,9 +22,19 @@ export interface NetworkRequest {
 export interface ScriptRule {
   id: string;
   name: string;
-  matchUrl: string;
-  action: 'Allow' | 'Block' | 'Modify Response';
-  active: boolean;
+  urlPattern: string; // Support wildcard *
+  enabled: boolean;
+  trigger: 'request' | 'response' | 'both';
+  code: string; // JavaScript code to execute
+  description?: string;
+}
+
+export interface ScriptLog {
+  timestamp: number;
+  ruleId: string;
+  ruleName: string;
+  type: 'log' | 'error' | 'info' | 'warn';
+  message: string;
 }
 
 export interface BreakpointRule {

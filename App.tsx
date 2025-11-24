@@ -33,6 +33,7 @@ import { applyMapLocalRule } from './components/reqable/MapLocalRules';
 import { shouldBlockRequest } from './components/reqable/GatewayRules';
 import { applyMirrorRule } from './components/reqable/MirrorRules';
 import { loadRequestHistory, saveRequestHistory, clearRequestHistory } from './utils/historyManager';
+import { applyScriptRules, addScriptLog } from './utils/scriptEngine';
 
 type ActiveApp = 'browser' | 'reqable' | 'split' | 'docs' | 'wechat';
 
@@ -166,11 +167,14 @@ export default function App() {
     // 2. Apply rewrite rules
     const rewrittenReq = applyRewriteRules(mirroredReq);
 
-    // 3. Check gateway blocking rules
-    const isBlocked = shouldBlockRequest(rewrittenReq.url);
+    // 3. Apply script rules (request phase)
+    const scriptedReq = applyScriptRules(rewrittenReq, 'request', addScriptLog);
+
+    // 4. Check gateway blocking rules
+    const isBlocked = shouldBlockRequest(scriptedReq.url);
     if (isBlocked) {
       const blockedReq = {
-        ...rewrittenReq,
+        ...scriptedReq,
         status: 403,
         statusText: 'Blocked by Gateway Rule',
         time: 0,
@@ -184,22 +188,22 @@ export default function App() {
     const activeRules = getActiveBreakpointRules();
     const shouldPause = breakpointActive || activeRules.some(rule => {
       if (rule.type === 'request' || rule.type === 'both') {
-        return matchesBreakpointRule(rewrittenReq.url, rule.urlPattern);
+        return matchesBreakpointRule(scriptedReq.url, rule.urlPattern);
       }
       return false;
     });
 
     if (shouldPause) {
-      const pausedReq = { ...rewrittenReq, isPaused: true, status: 0 };
+      const pausedReq = { ...scriptedReq, isPaused: true, status: 0 };
       setRequests(prev => [...prev, pausedReq]);
     } else {
-      setRequests(prev => [...prev, rewrittenReq]);
-      if (rewrittenReq.type === 'fetch' || rewrittenReq.type === 'xhr' || rewrittenReq.type === 'img') {
-        processBackendLogic(rewrittenReq);
+      setRequests(prev => [...prev, scriptedReq]);
+      if (scriptedReq.type === 'fetch' || scriptedReq.type === 'xhr' || scriptedReq.type === 'img') {
+        processBackendLogic(scriptedReq);
       }
     }
 
-    if (activeCaseId === 'case_09' && rewrittenReq.url.includes('dashboard') && rewrittenReq.status === 200) {
+    if (activeCaseId === 'case_09' && scriptedReq.url.includes('dashboard') && scriptedReq.status === 200) {
       triggerSuccess();
     }
   };
@@ -212,11 +216,14 @@ export default function App() {
     // 2. Apply rewrite rules
     const rewrittenReq = applyRewriteRules(mirroredReq);
 
-    // 3. Check gateway blocking rules
-    const isBlocked = shouldBlockRequest(rewrittenReq.url);
+    // 3. Apply script rules (request phase)
+    const scriptedReq = applyScriptRules(rewrittenReq, 'request', addScriptLog);
+
+    // 4. Check gateway blocking rules
+    const isBlocked = shouldBlockRequest(scriptedReq.url);
     if (isBlocked) {
       const blockedReq = {
-        ...rewrittenReq,
+        ...scriptedReq,
         status: 403,
         statusText: 'Blocked by Gateway Rule',
         time: 0,
@@ -230,17 +237,17 @@ export default function App() {
     const activeRules = getActiveBreakpointRules();
     const shouldPause = breakpointActive || activeRules.some(rule => {
       if (rule.type === 'request' || rule.type === 'both') {
-        return matchesBreakpointRule(rewrittenReq.url, rule.urlPattern);
+        return matchesBreakpointRule(scriptedReq.url, rule.urlPattern);
       }
       return false;
     });
 
     if (shouldPause) {
-      const pausedReq = { ...rewrittenReq, isPaused: true, status: 0 };
+      const pausedReq = { ...scriptedReq, isPaused: true, status: 0 };
       setRequests(prev => [...prev, pausedReq]);
     } else {
-      setRequests(prev => [...prev, rewrittenReq]);
-      processBackendLogic(rewrittenReq);
+      setRequests(prev => [...prev, scriptedReq]);
+      processBackendLogic(scriptedReq);
     }
   };
 
@@ -338,7 +345,9 @@ export default function App() {
     }
 
     setTimeout(() => {
-      setRequests(prev => prev.map(r => r.id === req.id ? finalResponse : r));
+      // Apply script rules (response phase)
+      const scriptedResponse = applyScriptRules(finalResponse, 'response', addScriptLog);
+      setRequests(prev => prev.map(r => r.id === req.id ? scriptedResponse : r));
     }, 100);
 
     if (shouldTriggerSuccess) {
