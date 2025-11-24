@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('case_01 - API 协议分析与构造', () => {
   test('用户可以通过 Reqable Composer 修复登录接口并通关', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // 确认已处于 case_01
-    await expect(page.getByText('API 协议分析与构造')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'API 协议分析与构造' })).toBeVisible();
 
     // 打开 Reqable 的 Composer 视图
     await page.getByTestId('reqable-tab-composer').click();

@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('case_02 - 逻辑漏洞：价格篡改', () => {
   test('用户可以通过修改 JSON 价格参数完成购买', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // 打开任务列表
-    await page.getByText('Mission Select').click();
+    await page.getByTestId('task-sidebar').getByText('Mission Select').click();
 
     // 在列表中选择“逻辑漏洞：价格篡改”
     await page.getByText('逻辑漏洞：价格篡改').click();
