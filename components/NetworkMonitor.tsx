@@ -39,6 +39,12 @@ export const NetworkMonitor: React.FC<NetworkMonitorProps> = ({
   const [consoleInput, setConsoleInput] = useState('');
   const [consoleLogs, setConsoleLogs] = useState<{type:'in'|'out'|'err'|'warn'|'info', data: any}[]>([]);
   const consoleEndRef = useRef<HTMLDivElement>(null);
+  const handleTabSwitch = (tab: typeof mainTab) => {
+    setMainTab(tab);
+    if (typeof window !== 'undefined') {
+      (window as any).__netrunnerDevtoolsTab = tab;
+    }
+  };
 
   useEffect(() => {
       if(mainTab === 'Console') consoleEndRef.current?.scrollIntoView();
@@ -108,6 +114,10 @@ export const NetworkMonitor: React.FC<NetworkMonitorProps> = ({
       }, 50);
   };
 
+  useEffect(() => {
+    console.log('[NetworkMonitor] mainTab changed to', mainTab);
+  }, [mainTab]);
+
   const selectedRequest = requests.find((r) => r.id === selectedId);
 
   const getStatusColor = (status: number) => {
@@ -124,7 +134,7 @@ export const NetworkMonitor: React.FC<NetworkMonitorProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#242424] text-[#a8a8a8] font-sans text-xs select-none w-full min-w-0">
+    <div className="flex flex-col h-full bg-[#242424] text-[#a8a8a8] font-sans text-xs w-full min-w-0">
       
       {/* --- ROW 1: TAB BAR & WINDOW CONTROLS --- */}
       <div className="flex h-[28px] shrink-0 bg-[#202124] w-full z-20 relative border-b border-[#35363a]">
@@ -133,6 +143,7 @@ export const NetworkMonitor: React.FC<NetworkMonitorProps> = ({
              {['Elements', 'Console', 'Sources', 'Network', 'Performance', 'Memory', 'Application'].map((tab) => (
                 <div 
                     key={tab}
+                    data-testid={tab === 'Console' ? 'devtools-tab-console' : undefined}
                     onClick={() => setMainTab(tab as any)}
                     className={`px-3 h-full flex items-center cursor-default border-b-2 text-[12px] transition-colors whitespace-nowrap ${
                         mainTab === tab 
@@ -151,7 +162,14 @@ export const NetworkMonitor: React.FC<NetworkMonitorProps> = ({
              <div className="w-[1px] h-3.5 bg-[#494c50] mx-1"></div>
              <button onClick={() => onDockChange('bottom')} className={`p-1 rounded hover:bg-[#35363a] ${dockSide === 'bottom' ? 'text-blue-400' : ''}`}><PanelBottom size={14} /></button>
              <button onClick={() => onDockChange('right')} className={`p-1 rounded hover:bg-[#35363a] ${dockSide === 'right' ? 'text-blue-400' : ''}`}><PanelRight size={14} /></button>
-             <button onClick={onClose} className="p-1 hover:bg-red-900/50 hover:text-red-400 rounded ml-1"><X size={14} /></button>
+            <button
+              onClick={onClose}
+              aria-label="关闭 DevTools"
+              title="关闭 DevTools"
+              className="p-1 hover:bg-red-900/50 hover:text-red-400 rounded ml-1"
+            >
+              <X size={14} />
+            </button>
         </div>
       </div>
 

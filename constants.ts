@@ -2,6 +2,410 @@
 import { CaseStudy } from './types';
 
 export const CASE_STUDIES: CaseStudy[] = [
+  // --- STORY MODE (剧情专用关卡，不复用 case_XX) ---
+  {
+    id: 'story_01_login_outage',
+    title: '剧情 · 微信投放登录故障排查',
+    category: 'Story',
+    difficulty: 'Beginner',
+    description:
+      '周五晚高峰，一波新的微信广告投放刚上线，H5 落地页走的是新域名。部分用户打开后登录按钮一直转圈，实际登录接口大量返回 500。你需要用 Network 和 Reqable 抓包，从静态资源与响应头里找出“旧 JS + 旧接口”的线索，并验证切换到新登录路径是否可用。',
+    initialUrl: 'https://ad-landing.corp/wechat-campaign',
+    learningObjectives: [
+      '识别微信 H5 落地页上的静态 JS 资源与版本信息',
+      '使用 Reqable 捕获并分析登录接口 500 响应及 Header 线索',
+      '根据提示切换到新的登录 API 路径并验证修复效果',
+    ],
+    guideSteps: [
+      {
+        title: '1. 观察落地页与登录 500 行为',
+        content:
+          '在虚拟浏览器中打开微信投放落地页，使用 Network 面板观察页面加载的 JS 资源（例如 app-legacy.js），然后输入任意账号密码并点击登录按钮，确认登录请求返回 500 状态码。',
+      },
+      {
+        title: '2. 用 Reqable 抓包并阅读错误提示',
+        content:
+          '切换到 Reqable，在流量列表中找到这条 500 登录请求，将其发送到 Composer，查看 Response Headers 中是否存在 Base64 编码的 `X-Error-Info` 等提示字段，确认旧接口已被弃用并给出新接口路径。',
+      },
+      {
+        title: '3. 使用 Composer 验证新登录接口',
+        content:
+          '根据错误提示中的信息，在 Composer 中将 URL 改为新的登录接口路径（例如 `/api/v2/login`），保持方法和必要字段不变，发送请求并验证是否可以正常返回 200，以此证明“新 JS + 新接口”路径在网络侧是可用的。',
+      },
+    ],
+  },
+  {
+    id: 'story_02_price_tampering',
+    title: '剧情 · 价格篡改与对账异常',
+    category: 'Story',
+    difficulty: 'Intermediate',
+    description:
+      '运营反馈有用户以 1 元价格买走了高价商品。你需要在故事场景中发现并复现价格参数被篡改的路径，并给出修复建议。',
+    initialUrl: 'https://shop.demo/checkout',
+    learningObjectives: [
+      '理解 Web Parameter Tampering 对价格字段的影响',
+      '使用 Reqable JSON Body 编辑器修改 price 值',
+      '根据响应判断服务端是否信任客户端价格',
+    ],
+    guideSteps: [
+      {
+        title: '1. 正常下单并记录请求',
+        content:
+          '在虚拟浏览器中点击“立即支付”，在 Network 面板记录原始请求的 URL、方法和 Body 中的 price 字段。',
+      },
+      {
+        title: '2. 在 Reqable 中修改 price',
+        content:
+          '将该请求发送到 Reqable Composer，确认 Content-Type 为 application/json，在 Body 编辑器中把 price 改成 1。',
+      },
+      {
+        title: '3. 重放并分析风险',
+        content:
+          '发送修改后的请求，如果服务器仍然返回成功订单响应，则说明存在严重的逻辑漏洞，需要在服务端重新计算价格而不是信任客户端传值。',
+      },
+    ],
+  },
+  {
+    id: 'story_03_sql_injection',
+    title: '剧情 · 搜索接口 SQL 注入探测',
+    category: 'Story',
+    difficulty: 'Intermediate',
+    description:
+      '监控显示搜索接口在执行大量全表扫描，疑似被恶意查询打爆。你需要通过构造经典 SQL 注入 payload 验证风险，并理解问题根源。',
+    initialUrl: 'https://hr.corp/search',
+    learningObjectives: [
+      '识别搜索参数中的潜在注入点',
+      '通过构造 `\' OR \'1\'=\'1` 之类 payload 观察返回结果变化',
+      '理解使用参数化查询防御 SQL 注入的重要性',
+    ],
+    guideSteps: [
+      {
+        title: '1. 正常搜索与基线建立',
+        content:
+          '在虚拟浏览器中使用正常关键字（例如 Alice）进行搜索，记录返回结果数量和 Network 中的请求参数。',
+      },
+      {
+        title: '2. 构造注入 payload',
+        content:
+          '将搜索关键字替换为 `\' OR \'1\'=\'1`，通过浏览器或 Reqable 构造相同的请求，观察返回结果是否明显增多。',
+      },
+      {
+        title: '3. 分析注入效果',
+        content:
+          '结合响应与 OWASP 文档，判断是否触发了“WHERE 条件永真”的 SQL 注入，并思考在真实系统中如何通过参数化查询修复问题。',
+      },
+    ],
+  },
+  {
+    id: 'story_04_idor',
+    title: '剧情 · 订单详情越权访问（IDOR）',
+    category: 'Story',
+    difficulty: 'Intermediate',
+    description:
+      '用户投诉能看到其他人的订单详情。你需要在剧情中定位订单详情接口，并通过修改订单 ID 验证是否存在 IDOR 漏洞。',
+    initialUrl: 'https://shop.demo/orders/1001',
+    learningObjectives: [
+      '理解 Insecure Direct Object Reference (IDOR) 的攻击模型',
+      '通过修改 URL 中的订单 ID 测试越权访问',
+      '认识到服务端访问控制校验的重要性',
+    ],
+    guideSteps: [
+      {
+        title: '1. 抓取当前订单详情',
+        content:
+          '在虚拟浏览器中访问订单详情页，确认 URL 包含订单 ID（例如 /orders/1001），并在 Network 中抓取对应 API 请求。',
+      },
+      {
+        title: '2. 使用 Reqable 修改 ID',
+        content:
+          '将该订单请求发送到 Reqable Composer，仅将 URL 中的 1001 改为 1002，保持其它参数不变。',
+      },
+      {
+        title: '3. 验证是否越权',
+        content:
+          '重放修改后的请求，如果服务器返回了另一位用户的订单数据，则证明存在 IDOR 漏洞，需要在真实系统中按当前用户权限过滤可访问对象。',
+      },
+    ],
+  },
+  {
+    id: 'story_05_metrics_misleading',
+    title: '剧情 · 埋点误报与监控偏差',
+    category: 'Story',
+    difficulty: 'Intermediate',
+    description:
+      '监控大屏显示“下单成功率几乎归零”，但你抓到的真实请求日志并没有那么惨。你需要通过抓包对比业务日志与埋点上报，识别埋点逻辑夸大错误率的问题。',
+    initialUrl: 'https://metrics.corp/dashboard',
+    learningObjectives: [
+      '理解埋点事件与真实业务行为的差异',
+      '通过抓包对比监控曲线与原始日志',
+      '识别常见的“重试也算失败”等埋点误报模式',
+    ],
+    guideSteps: [
+      {
+        title: '1. 观察监控大盘',
+        content:
+          '在虚拟浏览器中打开监控大屏，注意“下单成功率”指标几乎贴地，而其他系统指标（CPU、错误数）并没有同样级别的异常。',
+      },
+      {
+        title: '2. 用 Reqable 抓业务日志接口',
+        content:
+          '在 Reqable 中捕获一条下单流程的业务日志或统计接口（例如 /api/logs/orders），查看其中“成功/失败”的真实比例，判断是否与监控图表一致。',
+      },
+      {
+        title: '3. 对比埋点上报接口',
+        content:
+          '在 Reqable 中找到埋点上报接口（例如 /metrics/raw），观察其中的事件含义：是否把重试也算成一次失败，导致图表夸大错误率，并思考如何在真实系统中修正埋点逻辑。',
+      },
+    ],
+  },
+  {
+    id: 'story_06_stacktrace_leak',
+    title: '剧情 · 异常栈直出与信息泄露',
+    category: 'Story',
+    difficulty: 'Intermediate',
+    description:
+      '有用户截图反馈页面出现了整段 SQL 报错和内部文件路径，安全负责人认为这是“今晚修不完也得先记在账上”的问题。你需要通过抓包捕获这条响应，分析泄露的内部信息类型，并理解正确的错误处理方式。',
+    initialUrl: 'https://shop.demo/orders/error',
+    learningObjectives: [
+      '识别响应中暴露的 stacktrace 与内部信息',
+      '通过抓包复现并记录异常响应',
+      '理解前端只展示错误码/工单号而非完整异常栈的必要性',
+    ],
+    guideSteps: [
+      {
+        title: '1. 复现错误页面',
+        content:
+          '在虚拟浏览器中访问报错的订单详情页（例如 /orders/error），确认页面上出现了一整段 SQL 报错与文件路径信息。',
+      },
+      {
+        title: '2. 在 Reqable 中捕获异常响应',
+        content:
+          '在 Reqable 中找到对应的 API 请求（例如 GET /api/orders/error），查看响应 Body 中是否包含 stacktrace、内部表名或文件系统路径等敏感信息。',
+      },
+      {
+        title: '3. 思考正确的错误处理方式',
+        content:
+          '结合 OWASP 建议，思考如何在真实系统中只向前端返回错误码和工单号，将详细异常栈写入内部日志系统，而不是直接暴露给终端用户。',
+      },
+    ],
+  },
+  {
+    id: 'story_07_waf_callback',
+    title: '剧情 · 支付回调被 WAF 拦截',
+    category: 'Story',
+    difficulty: 'Intermediate',
+    description:
+      '支付团队反馈第三方支付平台的回调一直没到我们系统，排查发现请求在 WAF 层被拦截，提示包含敏感字段。你需要用 Reqable 抓取回调请求，分析被拦的 Header/Body，并验证临时放行策略。',
+    initialUrl: 'https://payments.corp/callback-monitor',
+    learningObjectives: [
+      '理解支付回调流程与安全设备之间的联动',
+      '利用抓包工具复现 WAF 拦截的请求',
+      '识别敏感字段与临时放行策略',
+    ],
+    guideSteps: [
+      {
+        title: '1. 观察回调监控',
+        content:
+          '在虚拟浏览器中打开回调监控页面，注意“成功回调”数大幅下降，错误区显示 WAF 拦截提示。',
+      },
+      {
+        title: '2. 抓取被拦请求',
+        content:
+          '点击页面上的“复现回调”按钮，在 Reqable 中捕获发往 `/api/payments/callback` 的请求，查看 WAF 响应中的拦截原因。',
+      },
+      {
+        title: '3. 验证临时放行策略',
+        content:
+          '根据提示构造一个包含 `X-WAF-Allow: callback` 的请求重新发送，确认 WAF 放行并返回 200，作为临时止血方案。',
+      },
+    ],
+  },
+  {
+    id: 'story_incident_feature_flag_patch',
+    title: '剧情 · 特性开关回退',
+    category: 'Story',
+    difficulty: 'Advanced',
+    description:
+      'AB 实验误将新版脚本推向 100% 流量。你需要按照 Chrome DevTools Console 官方指南，在现场热补丁 `featureFlags`，把落地页强制回退到稳定版本，并同步证据给微信群。',
+    initialUrl: 'https://wechat-h5.corp/feature-flags',
+    learningObjectives: [
+      '使用 Chrome DevTools Console 检查与修改全局 feature flags',
+      '通过抓包确认新版 JS 不再访问过期 tracker 域名',
+      '把补丁日志与截图同步给指挥群，确保协作透明',
+    ],
+    guideSteps: [
+      {
+        title: '1. 打开 DevTools Console',
+        content:
+          '参考 Chrome 官方文档打开 DevTools Console，查看 `window.featureFlags`，确认异常实验处于开启状态。',
+      },
+      {
+        title: '2. 注入热补丁脚本',
+        content:
+          '执行 `window.featureFlags.forceLegacyFlow(true); window.featureFlags.disablePromo("wx-landing-ab");`，并记录 Console 输出时间戳。',
+      },
+      {
+        title: '3. 验证并同步线索',
+        content:
+          '刷新页面、配合 Reqable 观察新版 JS 不再加载，随后把截图上传微信群并点击“同步线索”。',
+      },
+    ],
+  },
+  {
+    id: 'story_incident_gray_release',
+    title: '剧情 · 灰度策略回滚',
+    category: 'Story',
+    difficulty: 'Advanced',
+    description:
+      'Ops 灰度平台仍认为实验进行中，需要用 Reqable Composer 调用内部 override API，强制关闭 `wechat-ab-992`，避免重启后又推回出问题的脚本。',
+    initialUrl: 'https://ops.corp/gray-dashboard',
+    learningObjectives: [
+      '熟悉 Reqable Composer 的自定义 Header 与 JSON Body 配置',
+      '理解内部灰度 API 的鉴权参数与审计要求',
+      '在微信群中同步 override 结果与 runbook 链接',
+    ],
+    guideSteps: [
+      {
+        title: '1. 采集灰度上下文',
+        content:
+          '抓取 Ops 域名请求，确认异常实验编号（如 `wechat-ab-992`）与操作 token，确保请求来源可追溯。',
+      },
+      {
+        title: '2. 构造 override 请求',
+        content:
+          '在 Reqable Composer 中设置 `POST https://ops.corp/api/gray-release/override`，携带 `X-OPS-Token` 与 JSON Body（action=disable, reason=incident-hotfix）。',
+      },
+      {
+        title: '3. 记录响应并回报',
+        content:
+          '确认响应返回 `status":"ok"`，刷新落地页验证 JS 未被重新推送，随后把请求截图与响应同步到微信群。',
+      },
+    ],
+  },
+  {
+    id: 'story_polyfill_ioc_capture',
+    title: '剧情 · polyfill 供应链劫持',
+    category: 'Story',
+    difficulty: 'Advanced',
+    description:
+      '依据 2024 年 Cloudflare / Google TAG 公告改编。你需要在 Reqable 中抓取 `polyfill.io` 返回的脚本，找出被注入的恶意片段，并把 IOC 同步给微信群里的同事。',
+    initialUrl: 'https://wechat-h5.corp/polyfill-check',
+    learningObjectives: [
+      '使用 Reqable 捕获微信内置浏览器请求并保存恶意脚本证据',
+      '在响应中定位 atob / analytics.polyfill 等 IOC',
+      '将抓到的 IOC 反馈到剧情聊天，支撑后续止血动作',
+    ],
+    guideSteps: [
+      {
+        title: '1. 在虚拟浏览器中触发 polyfill 请求',
+        content:
+          '点击页面中的“下载 polyfill”按钮，确认 Reqable 捕获到 `https://cdn.polyfill.io/v3/polyfill.min.js` 请求。',
+      },
+      {
+        title: '2. 分析恶意脚本',
+        content:
+          '在 Reqable Response Viewer 中搜索 `atob(`、`analytics.polyfill.io` 等片段，记录 IOC。',
+      },
+      {
+        title: '3. 将线索同步回微信群',
+        content:
+          '按照剧情要求，在微信界面点击“同步线索”，表示你已经把截图/IOC 发回事故群。',
+      },
+    ],
+  },
+  {
+    id: 'story_polyfill_tls_fallback',
+    title: '剧情 · TLS 兼容与 HTTP/1.1 回落',
+    category: 'Story',
+    difficulty: 'Advanced',
+    description:
+      'force-h2 配置导致老 Android 完全握不上 TLS。你需要在 Reqable 中复现 HTTP/2 握手失败，再构造带有回退 Header 的请求验证 HTTP/1.1 是否恢复。',
+    initialUrl: 'https://status.corp/tls-monitor',
+    learningObjectives: [
+      '理解 TLS 握手监控面板提供的信号',
+      '构造带自定义 Header 的请求模拟 HTTP/2 / HTTP/1.1 行为',
+      '记录成功回退的证据并同步给事故群',
+    ],
+    guideSteps: [
+      {
+        title: '1. 触发 HTTP/2 探测',
+        content:
+          '在虚拟浏览器中点击“HTTP/2 探测”按钮，查看 Reqable 中返回的握手失败日志。',
+      },
+      {
+        title: '2. 构造 HTTP/1.1 回退请求',
+        content:
+          '在 Reqable Composer 中复制该请求，并添加 `X-Debug-Force-TLS: http1` Header，再次发送。',
+      },
+      {
+        title: '3. 记录兼容性线索',
+        content:
+          '成功返回 200 后，把“HTTP/1.1 正常握手”的结论同步回微信群，等待 TLS 团队正式调整。',
+      },
+    ],
+  },
+  {
+    id: 'story_polyfill_reqable_rule',
+    title: '剧情 · Reqable 规则临时止血',
+    category: 'Story',
+    difficulty: 'Advanced',
+    description:
+      '为了在彻底修复前阻断恶意 polyfill 域名，需要你在 Reqable Scriptable Rule 中快速写一条“Block analytics.polyfill.io”的脚本，并验证规则生效。',
+    initialUrl: 'https://reqable.corp/rules/playground',
+    learningObjectives: [
+      '熟悉 Reqable Scriptable Rules 的编写方式',
+      '通过脚本拦截指定域名或请求头',
+      '把临时规则的核心逻辑同步到剧情群，便于团队备案',
+    ],
+    guideSteps: [
+      {
+        title: '1. 在虚拟浏览器中查看规则模板',
+        content:
+          '阅读页面上提供的脚本片段，了解如何匹配 `analytics.polyfill.io` 域名。',
+      },
+      {
+        title: '2. 发送规则到后端模拟接口',
+        content:
+          '点击“执行脚本”按钮或在 Reqable 中 POST 到 `/api/rules/apply`，Body 中需包含拦截逻辑。',
+      },
+      {
+        title: '3. 同步规则结论',
+        content:
+          '当接口返回 `rule_applied: true` 时，返回微信剧情并同步线索，表明规则已生效。',
+      },
+    ],
+  },
+  {
+    id: 'story_polyfill_cdn_validation',
+    title: '剧情 · CDN Purge 验证与缓存兜底',
+    category: 'Story',
+    difficulty: 'Advanced',
+    description:
+      '前端已经换成 self-host polyfill，但 CDN 节点是否刷新成功需要你来验证。通过 Reqable + 虚拟浏览器刷新页面，并抓包确认 Cache-Control / X-Cache-Status。',
+    initialUrl: 'https://cdn-ops.corp/purge-checker',
+    learningObjectives: [
+      '使用 cache-busting 查询参数验证 CDN 是否命中新资源',
+      '在响应头中检查 Cache-Control / Age / X-Cache-Status',
+      '将验证结果同步到剧情群，支撑复盘记录',
+    ],
+    guideSteps: [
+      {
+        title: '1. 触发 CDN 验证请求',
+        content:
+          '点击“刷新并验证”按钮，或在 Reqable 中构造带 `?purge_check=1` 的请求。',
+      },
+      {
+        title: '2. 检查响应头',
+        content:
+          '确认响应中包含 `Cache-Control: public, max-age=60` 以及 `X-Cache-Status: BYPASS`，证明缓存已刷新。',
+      },
+      {
+        title: '3. 回传线索',
+        content:
+          '在微信剧情中点击“同步线索”，表示你已经把 CDN 验证截图回传给同事。',
+      },
+    ],
+  },
   // --- BASICS ---
   {
     id: 'case_01',

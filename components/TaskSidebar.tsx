@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CaseStudy } from '../types';
 import { CheckCircle2, ChevronRight, ChevronDown, BookOpen, Shield, Zap, Terminal, Bug, Code2, List, Target, Wrench } from 'lucide-react';
 
@@ -11,19 +11,24 @@ interface TaskSidebarProps {
 
 export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, onSelectCase }) => {
   const [activeTab, setActiveTab] = useState<'brief' | 'list'>('brief');
-  
+  const briefRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     'Basics': true,
     'Security': true,
     'Advanced': true,
     'Debugging': true,
     'Reverse': true,
-    'Reqable': true
+    'Reqable': true,
+    'Story': true
   });
 
   // Auto-switch to Brief tab when a new case is selected
   useEffect(() => {
     setActiveTab('brief');
+    if (briefRef.current) {
+      briefRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, [caseStudy.id]);
 
   const toggleCategory = (cat: string) => {
@@ -52,7 +57,7 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, o
   };
 
   return (
-    <div className="w-80 bg-[#1e1e1e] border-r border-[#333] flex flex-col h-full text-gray-300 flex-shrink-0 z-50 shadow-2xl">
+    <div data-testid="task-sidebar" className="w-80 bg-[#1e1e1e] border-r border-[#333] flex flex-col h-full text-gray-300 flex-shrink-0 z-50 shadow-2xl">
       
       {/* Header */}
       <div className="p-4 border-b border-[#333] bg-[#1a1a1a]">
@@ -66,7 +71,12 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, o
       {/* Tabs */}
       <div className="flex border-b border-[#333] bg-[#252526]">
         <button 
-            onClick={() => setActiveTab('brief')}
+            onClick={() => {
+                setActiveTab('brief');
+                if (briefRef.current) {
+                  briefRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }}
             className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
                 activeTab === 'brief' 
                 ? 'bg-[#1e1e1e] text-blue-400 border-t-2 border-blue-400' 
@@ -78,7 +88,12 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, o
         </button>
         <div className="w-[1px] bg-[#333]"></div>
         <button 
-            onClick={() => setActiveTab('list')}
+            onClick={() => {
+                setActiveTab('list');
+                if (listRef.current) {
+                  listRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }}
             className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
                 activeTab === 'list' 
                 ? 'bg-[#1e1e1e] text-blue-400 border-t-2 border-blue-400' 
@@ -91,11 +106,13 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, o
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto bg-[#1e1e1e] relative">
+      <div className="flex-1 overflow-y-auto bg-[#1e1e1e] relative space-y-6">
         
-        {/* --- TAB 1: MISSION BRIEF (GUIDE) --- */}
-        {activeTab === 'brief' && (
-            <div className="p-5 animate-in fade-in slide-in-from-left-2 duration-300">
+        {/* --- SECTION: MISSION BRIEF (GUIDE) --- */}
+        <div
+            ref={briefRef}
+            className={`p-5 animate-in fade-in slide-in-from-left-2 duration-300 transition-opacity ${activeTab === 'list' ? 'opacity-80' : 'opacity-100'}`}
+        >
                 <div className="flex items-center gap-2 mb-3">
                     <span className={`text-[10px] px-2 py-0.5 rounded border font-bold uppercase tracking-wider ${
                         caseStudy.difficulty === 'Beginner' ? 'border-green-800 text-green-400 bg-green-900/20' : 
@@ -158,14 +175,18 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, o
                         </div>
                     </div>
                 </div>
-            </div>
-        )}
+        </div>
 
-        {/* --- TAB 2: MISSION LIST --- */}
-        {activeTab === 'list' && (
-            <div className="animate-in fade-in slide-in-from-right-2 duration-300">
+        {/* --- SECTION: MISSION LIST --- */}
+        <div
+            ref={listRef}
+            className={`animate-in fade-in slide-in-from-right-2 duration-300 border-t border-[#2c2c2c] ${activeTab === 'brief' ? 'opacity-90' : 'opacity-100'}`}
+        >
                 <div className="p-4">
-                    <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 pl-2">Available Scenarios</h3>
+                    <div className="flex items-center justify-between mb-4 pl-2">
+                        <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Available Scenarios</h3>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-widest">点击切换不同案例</span>
+                    </div>
                     <div className="space-y-3">
                         {(Object.entries(groupedCases) as [string, CaseStudy[]][]).map(([category, cases]) => (
                             <div key={category} className="bg-[#252526] rounded-lg border border-[#333] overflow-hidden">
@@ -200,8 +221,7 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({ caseStudy, allCases, o
                         ))}
                     </div>
                 </div>
-            </div>
-        )}
+        </div>
 
       </div>
     </div>

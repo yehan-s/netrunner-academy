@@ -26,3 +26,28 @@ body {
   background: #4f4f4f;
 }
 
+/* macOS-style smooth transitions for document switching */
+.doc-content {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.doc-content-enter {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+
+/* macOS-style smooth transitions for app switching */
+.app-container {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+              transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.app-container-exit {
+  opacity: 0;
+  transform: scale(0.97);
+}
+
