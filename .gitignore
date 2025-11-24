@@ -45,5 +45,17 @@ coverage
 *.pem
 .vercel
 
+# Temp files and backups
+*.bak
+tsconfig.tsbuildinfo
+
+# Tool-specific directories
+.gemini-clipboard/
+.serena/
+
+# Test results (keep .last-run.json for CI)
+test-results/*
+!test-results/.last-run.json
+
 AGENTS.md
 CLAUDE.md
