@@ -6,14 +6,21 @@ test.describe('Story 05 - 埋点误报与监控偏差', () => {
   test('在监控大盘界面触发埋点原始数据请求并通关', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
+
     // 打开任务列表并进入剧情关卡
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
-    await page.getByText('剧情 · 埋点误报与监控偏差').click();
+    await page.waitForTimeout(300);
+    
+    const storyButton = page.getByTestId('task-sidebar').getByRole('button', { name: '剧情 · 埋点误报与监控偏差' });
+    await expect(storyButton).toBeVisible();
+    await storyButton.click();
 
     // 确认监控大盘 UI 已加载
     await expect(
       page.getByText('订单转化监控 · 关键指标'),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 5000 });
 
     // 在页面点击“埋点原始数据”按钮，触发 /metrics/raw 请求
     await page.evaluate(() => {

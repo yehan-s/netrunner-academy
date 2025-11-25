@@ -4,6 +4,8 @@ test.describe('case_04 - 越权访问 (IDOR)', () => {
   test('用户通过修改订单 ID 触发 IDOR 关卡成功', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     // 打开任务列表并选择 IDOR 关卡
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
     await page.getByText('越权访问 (IDOR)').click();

@@ -11,6 +11,8 @@ test.describe('case_03 - SQL 注入基础', () => {
   test('用户可以打开关卡并通过 Reqable 发送搜索请求', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     // 打开任务列表
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
 

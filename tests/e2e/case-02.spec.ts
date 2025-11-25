@@ -4,6 +4,8 @@ test.describe('case_02 - 逻辑漏洞：价格篡改', () => {
   test('用户可以通过修改 JSON 价格参数完成购买', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     // 打开任务列表
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
 

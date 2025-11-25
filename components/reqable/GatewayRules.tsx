@@ -160,12 +160,12 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
 
   const content = (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
-      <div className="bg-[#1a1a2e] border border-cyan-500/30 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-cyan-500/30">
+        <div className="flex items-center justify-between p-4 border-b border-[#3c3c3c]">
           <div className="flex items-center gap-3">
-            <Shield className="text-cyan-400" size={24} />
-            <h2 className="text-xl font-bold text-cyan-400">网关规则</h2>
+            <Shield className="text-[#4ec9b0]" size={24} />
+            <h2 className="text-xl font-bold text-[#4ec9b0]">网关规则</h2>
           </div>
           <button
             onClick={onClose}
@@ -189,8 +189,8 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
 
           {/* Add/Edit Form */}
           {(isAdding || editingRule) && (
-            <div className="bg-[#16213e] border border-cyan-500/20 rounded p-4 space-y-3">
-              <h3 className="text-lg font-semibold text-cyan-400">
+            <div className="bg-[#252526] border border-[#3c3c3c] rounded p-4 space-y-3">
+              <h3 className="text-lg font-semibold text-[#4ec9b0]">
                 {editingRule ? '编辑规则' : '新建规则'}
               </h3>
 
@@ -200,7 +200,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
                   type="text"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  className="w-full bg-[#0f1419] border border-gray-600 rounded px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-[#2d2d30] border border-gray-600 rounded px-3 py-2 text-white focus:border-[#4ec9b0] focus:outline-none"
                   placeholder="例: 屏蔽广告"
                 />
               </div>
@@ -213,7 +213,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
                   type="text"
                   value={formUrlPattern}
                   onChange={e => setFormUrlPattern(e.target.value)}
-                  className="w-full bg-[#0f1419] border border-gray-600 rounded px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-[#2d2d30] border border-gray-600 rounded px-3 py-2 text-white focus:border-[#4ec9b0] focus:outline-none"
                   placeholder="例: https://ads.example.com/*"
                 />
               </div>
@@ -223,7 +223,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
                 <select
                   value={formAction}
                   onChange={e => setFormAction(e.target.value as 'block' | 'allow')}
-                  className="w-full bg-[#0f1419] border border-gray-600 rounded px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-[#2d2d30] border border-gray-600 rounded px-3 py-2 text-white focus:border-[#4ec9b0] focus:outline-none"
                 >
                   <option value="block">阻止 (Block)</option>
                   <option value="allow">允许 (Allow - 白名单)</option>
@@ -237,7 +237,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
                 <textarea
                   value={formDescription}
                   onChange={e => setFormDescription(e.target.value)}
-                  className="w-full bg-[#0f1419] border border-gray-600 rounded px-3 py-2 text-white focus:border-cyan-500 focus:outline-none resize-none"
+                  className="w-full bg-[#2d2d30] border border-gray-600 rounded px-3 py-2 text-white focus:border-[#4ec9b0] focus:outline-none resize-none"
                   rows={2}
                   placeholder="例: 屏蔽所有广告域名"
                 />
@@ -270,9 +270,9 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
               {rules.map(rule => (
                 <div
                   key={rule.id}
-                  className={`bg-[#16213e] border rounded p-3 transition ${
+                  className={`bg-[#252526] border rounded p-3 transition ${
                     rule.enabled
-                      ? 'border-cyan-500/30 hover:border-cyan-500/50'
+                      ? 'border-[#3c3c3c] hover:border-[#4ec9b0]/50'
                       : 'border-gray-600/30 opacity-60'
                   }`}
                 >
@@ -281,7 +281,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
                       type="checkbox"
                       checked={rule.enabled}
                       onChange={() => handleToggleEnabled(rule.id)}
-                      className="mt-1 accent-cyan-500 w-4 h-4"
+                      className="mt-1 accent-[#4ec9b0] w-4 h-4"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -313,7 +313,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
                     <div className="flex gap-2 ml-4">
                       <button
                         onClick={() => handleEditRule(rule)}
-                        className="text-cyan-400 hover:text-cyan-300 text-sm"
+                        className="text-[#4ec9b0] hover:text-[#3db89f] text-sm"
                       >
                         编辑
                       </button>
@@ -332,7 +332,7 @@ const GatewayRules: React.FC<GatewayRulesProps> = ({ onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-cyan-500/30 flex justify-end">
+        <div className="p-4 border-t border-[#3c3c3c] flex justify-end">
           <button
             onClick={onClose}
             className="py-2 px-6 bg-gray-600 hover:bg-gray-700 text-white rounded transition"

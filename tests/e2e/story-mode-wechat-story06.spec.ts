@@ -6,6 +6,8 @@ test.describe('Story 06 - 异常栈直出与信息泄露', () => {
   test('复现 /api/orders/error 并触发通关', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
     await page.getByText('剧情 · 异常栈直出与信息泄露').click();
 

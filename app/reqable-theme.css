@@ -1,0 +1,196 @@
+/**
+ * Reqable Theme - 真实 Reqable 应用配色方案
+ * 基于官方截图还原: https://reqable.com/en-US/docs/introduction/
+ */
+
+:root {
+  /* ========== 背景色 ========== */
+  --reqable-bg-primary: #1e1e1e;      /* 主背景 */
+  --reqable-bg-secondary: #252526;    /* 侧边栏、顶部栏 */
+  --reqable-bg-tertiary: #2d2d30;     /* 输入框、下拉框 */
+  --reqable-bg-hover: #2a2d2e;        /* 悬停状态 */
+  --reqable-bg-active: #37373d;       /* 选中/激活状态 */
+  --reqable-bg-input: #3c3c3c;        /* 输入框背景 */
+  
+  /* ========== 边框色 ========== */
+  --reqable-border-primary: #3c3c3c;  /* 主边框 */
+  --reqable-border-secondary: #454545; /* 次要边框 */
+  --reqable-border-light: #333333;    /* 浅色边框 */
+  --reqable-border-focus: #007acc;    /* 聚焦边框 */
+  
+  /* ========== 文字色 ========== */
+  --reqable-text-primary: #cccccc;    /* 主文字 */
+  --reqable-text-secondary: #858585;  /* 次要文字 */
+  --reqable-text-muted: #6e6e6e;      /* 弱化文字 */
+  --reqable-text-disabled: #5a5a5a;   /* 禁用文字 */
+  
+  /* ========== 强调色 ========== */
+  --reqable-accent-green: #4ec9b0;    /* 主强调色 - 状态指示、成功 */
+  --reqable-accent-blue: #569cd6;     /* 蓝色 - 链接、HTTP 方法 */
+  --reqable-accent-orange: #ce9178;   /* 橙色 - 路径、字符串 */
+  --reqable-accent-yellow: #dcdcaa;   /* 黄色 - 函数名 */
+  --reqable-accent-purple: #c586c0;   /* 紫色 - 关键字 */
+  --reqable-accent-red: #f48771;      /* 红色 - 错误、删除 */
+  --reqable-accent-cyan: #9cdcfe;     /* 青色 - 变量 */
+  
+  /* ========== 按钮色 ========== */
+  --reqable-btn-primary-bg: #4ec9b0;  /* 主按钮背景 (Start) */
+  --reqable-btn-primary-hover: #3db89f;
+  --reqable-btn-primary-text: #1e1e1e;
+  --reqable-btn-secondary-bg: #3c3c3c;
+  --reqable-btn-secondary-hover: #4a4a4a;
+  --reqable-btn-danger-bg: #f14c4c;
+  --reqable-btn-danger-hover: #d73a3a;
+  
+  /* ========== 状态色 ========== */
+  --reqable-status-success: #4ec9b0;  /* 成功/运行中 */
+  --reqable-status-warning: #cca700;  /* 警告 */
+  --reqable-status-error: #f48771;    /* 错误 */
+  --reqable-status-info: #569cd6;     /* 信息 */
+  
+  /* ========== HTTP 方法色 ========== */
+  --reqable-method-get: #4ec9b0;      /* GET - 绿色 */
+  --reqable-method-post: #569cd6;     /* POST - 蓝色 */
+  --reqable-method-put: #ce9178;      /* PUT - 橙色 */
+  --reqable-method-delete: #f48771;   /* DELETE - 红色 */
+  --reqable-method-patch: #dcdcaa;    /* PATCH - 黄色 */
+  --reqable-method-options: #858585;  /* OPTIONS - 灰色 */
+  --reqable-method-head: #c586c0;     /* HEAD - 紫色 */
+  
+  /* ========== HTTP 状态码色 ========== */
+  --reqable-status-1xx: #858585;      /* 信息 - 灰色 */
+  --reqable-status-2xx: #4ec9b0;      /* 成功 - 绿色 */
+  --reqable-status-3xx: #569cd6;      /* 重定向 - 蓝色 */
+  --reqable-status-4xx: #ce9178;      /* 客户端错误 - 橙色 */
+  --reqable-status-5xx: #f48771;      /* 服务端错误 - 红色 */
+  
+  /* ========== 选中行样式 ========== */
+  --reqable-row-selected-bg: #37373d;
+  --reqable-row-selected-border: #4ec9b0;
+  --reqable-row-hover-bg: #2a2d2e;
+  
+  /* ========== 标签页样式 ========== */
+  --reqable-tab-active-bg: #1e1e1e;
+  --reqable-tab-inactive-bg: #2d2d30;
+  --reqable-tab-border: #252526;
+  
+  /* ========== 图标色 ========== */
+  --reqable-icon-default: #858585;
+  --reqable-icon-hover: #cccccc;
+  --reqable-icon-active: #4ec9b0;
+  
+  /* ========== 阴影 ========== */
+  --reqable-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --reqable-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --reqable-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  
+  /* ========== 圆角 ========== */
+  --reqable-radius-sm: 2px;
+  --reqable-radius-md: 4px;
+  --reqable-radius-lg: 6px;
+  --reqable-radius-full: 9999px;
+  
+  /* ========== 字体 ========== */
+  --reqable-font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Droid Sans Mono', monospace;
+  --reqable-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  /* ========== 字号 ========== */
+  --reqable-text-xs: 11px;
+  --reqable-text-sm: 12px;
+  --reqable-text-base: 13px;
+  --reqable-text-lg: 14px;
+}
+
+/* ========== 通用样式类 ========== */
+
+/* 主容器背景 */
+.reqable-bg {
+  background-color: var(--reqable-bg-primary);
+}
+
+/* 侧边栏/面板背景 */
+.reqable-panel {
+  background-color: var(--reqable-bg-secondary);
+  border-color: var(--reqable-border-primary);
+}
+
+/* 输入框样式 */
+.reqable-input {
+  background-color: var(--reqable-bg-input);
+  border: 1px solid var(--reqable-border-primary);
+  color: var(--reqable-text-primary);
+  border-radius: var(--reqable-radius-sm);
+}
+
+.reqable-input:focus {
+  border-color: var(--reqable-border-focus);
+  outline: none;
+}
+
+/* 按钮样式 */
+.reqable-btn-primary {
+  background-color: var(--reqable-btn-primary-bg);
+  color: var(--reqable-btn-primary-text);
+  border: none;
+  border-radius: var(--reqable-radius-md);
+  font-weight: 500;
+}
+
+.reqable-btn-primary:hover {
+  background-color: var(--reqable-btn-primary-hover);
+}
+
+.reqable-btn-secondary {
+  background-color: var(--reqable-btn-secondary-bg);
+  color: var(--reqable-text-primary);
+  border: 1px solid var(--reqable-border-primary);
+  border-radius: var(--reqable-radius-md);
+}
+
+.reqable-btn-secondary:hover {
+  background-color: var(--reqable-btn-secondary-hover);
+}
+
+/* 选中行样式 */
+.reqable-row-selected {
+  background-color: var(--reqable-row-selected-bg);
+  border-left: 2px solid var(--reqable-row-selected-border);
+}
+
+/* 标签页样式 */
+.reqable-tab {
+  background-color: var(--reqable-tab-inactive-bg);
+  color: var(--reqable-text-secondary);
+  border: 1px solid var(--reqable-tab-border);
+}
+
+.reqable-tab-active {
+  background-color: var(--reqable-tab-active-bg);
+  color: var(--reqable-text-primary);
+  border-bottom-color: transparent;
+}
+
+/* 代码高亮 */
+.reqable-code {
+  font-family: var(--reqable-font-mono);
+  font-size: var(--reqable-text-sm);
+}
+
+/* 滚动条样式覆盖 */
+.reqable-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.reqable-scrollbar::-webkit-scrollbar-track {
+  background: var(--reqable-bg-primary);
+}
+
+.reqable-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--reqable-bg-tertiary);
+  border-radius: 5px;
+}
+
+.reqable-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--reqable-border-secondary);
+}

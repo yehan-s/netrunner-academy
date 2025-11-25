@@ -6,6 +6,8 @@ test.describe('Story 12 - 特性开关回退', () => {
   test('在 DevTools Console 中执行热补丁脚本即可通关', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
     await expect(page.getByText(/特性开关回退/)).toBeVisible();
     await page.getByText(/特性开关回退/).click();

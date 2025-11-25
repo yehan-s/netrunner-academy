@@ -16,6 +16,16 @@ import GatewayRules from './reqable/GatewayRules';
 import MirrorRules from './reqable/MirrorRules';
 import HighlightRules, { getHighlightColor } from './reqable/HighlightRules';
 import { ScriptEditor } from './reqable/ScriptEditor';
+import NetworkThrottle from './reqable/NetworkThrottle';
+import DiffViewer from './reqable/DiffViewer';
+import AccessControl from './reqable/AccessControl';
+import ProxyTerminal from './reqable/ProxyTerminal';
+import TurboMode from './reqable/TurboMode';
+import ReverseProxy from './reqable/ReverseProxy';
+import { ProxyStatusBar } from './reqable/ProxyStatusBar';
+import { TabBar, Tab } from './reqable/TabBar';
+import { FilterTabs } from './reqable/FilterTabs';
+import { StatusBar } from './reqable/StatusBar';
 import {
   Play, Shield, Trash2, Search, Layers, PenTool, Settings, Code, Highlighter,
   ChevronRight, Star, Bookmark, Globe, FolderTree,
@@ -24,26 +34,28 @@ import {
   Repeat, ExternalLink, Download, Eye, ChevronDown, Activity,
   Minus, CheckSquare, ToggleLeft, ToggleRight, Loader2, Check,
   AlertCircle, ArrowDown, ArrowUp, ArrowRight, Rocket, Calculator, Wrench, Smartphone, Wifi,
-  Filter, Pause, FileJson, List, Table, History, MoreHorizontal
+  Filter, Pause, FileJson, List, Table, History, MoreHorizontal,
+  Gauge, GitCompare, Ban, Terminal, Server
 } from 'lucide-react';
 import { ObjectExplorer } from './ObjectExplorer';
 
-// --- Theme Constants (Pixel Peeping) ---
+// --- Theme Constants (匹配真实 Reqable 配色) ---
 const COLORS = {
-  bg: '#181818', // Main Background
-  sidebar: '#202020', // Left Slim Sidebar
+  bg: '#1e1e1e', // Main Background (Reqable 深灰)
+  sidebar: '#252526', // Left Slim Sidebar
   panel: '#1e1e1e', // Panels
   header: '#252526', // Top bars
-  border: '#333333',
-  accent: '#fcd34d', // Reqable Yellow
+  border: '#3c3c3c',
+  accent: '#4ec9b0', // Reqable Green (主强调色)
   text: '#cccccc',
-  textDim: '#888888',
-  selection: '#264f78', // VS Code style selection
+  textDim: '#858585',
+  selection: '#37373d', // 选中行背景
   hover: '#2a2d2e',
   green: '#4ec9b0',
   blue: '#569cd6',
   yellow: '#dcdcaa',
   orange: '#ce9178',
+  red: '#f48771',
 };
 
 interface ReqableSimulatorProps {
@@ -126,6 +138,24 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
   // Highlight Rules Dialog State
   const [showHighlightRules, setShowHighlightRules] = useState(false);
+
+  // Network Throttle Dialog State
+  const [showNetworkThrottle, setShowNetworkThrottle] = useState(false);
+
+  // Diff Viewer Dialog State
+  const [showDiffViewer, setShowDiffViewer] = useState(false);
+
+  // Access Control Dialog State
+  const [showAccessControl, setShowAccessControl] = useState(false);
+
+  // Proxy Terminal Dialog State
+  const [showProxyTerminal, setShowProxyTerminal] = useState(false);
+
+  // Turbo Mode Dialog State
+  const [showTurboMode, setShowTurboMode] = useState(false);
+
+  // Reverse Proxy Dialog State
+  const [showReverseProxy, setShowReverseProxy] = useState(false);
 
   // HAR Import
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -267,8 +297,8 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
     <div className="h-full flex bg-[#1e1e1e] text-[#cccccc] font-sans select-none overflow-hidden" onClick={() => setContextMenu(null)}>
 
       {/* 1. Activity Bar (Left Slim Sidebar) */}
-      <div className="w-[50px] bg-[#252526] flex flex-col items-center py-3 border-r border-[#111] shrink-0 z-20">
-        <SidebarIcon icon={Activity} active={activeSidebarItem === 'traffic'} onClick={() => setActiveSidebarItem('traffic')} color="#fcd34d" />
+      <div className="w-[50px] bg-[#252526] flex flex-col items-center py-3 border-r border-[#3c3c3c] shrink-0 z-20">
+        <SidebarIcon icon={Activity} active={activeSidebarItem === 'traffic'} onClick={() => setActiveSidebarItem('traffic')} color="#4ec9b0" />
         <SidebarIcon icon={FolderTree} active={activeSidebarItem === 'collections'} onClick={() => setActiveSidebarItem('collections')} color="#569cd6" />
         <SidebarIcon icon={History} active={activeSidebarItem === 'history'} onClick={() => setActiveSidebarItem('history')} color="#ce9178" />
         <SidebarIcon icon={Code} active={activeSidebarItem === 'script'} onClick={() => setActiveSidebarItem('script')} color="#4ec9b0" />
@@ -279,8 +309,8 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
       {/* 1.5 Side Panel (Explorer) */}
       {activeSidebarItem !== 'traffic' && (
-        <div className="w-[250px] bg-[#252526] border-r border-[#111] flex flex-col min-h-0">
-          <div className="h-9 flex items-center px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-[#111] shrink-0">
+        <div className="w-[250px] bg-[#252526] border-r border-[#3c3c3c] flex flex-col min-h-0">
+          <div className="h-9 flex items-center px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-[#3c3c3c] shrink-0">
             {activeSidebarItem === 'collections' && 'Collections'}
             {activeSidebarItem === 'history' && 'History'}
             {activeSidebarItem === 'script' && 'Scripts'}
@@ -353,95 +383,56 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
       {/* 2. Main Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
 
-        {/* 2.1 Top Header */}
-        <div className="h-12 bg-[#252526] border-b border-[#111] flex items-center px-3 gap-3 shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1e1e1e] rounded-full border border-[#333] shadow-sm">
-            <div className={`w-2.5 h-2.5 rounded-full ${isRecording ? 'bg-[#4ec9b0] shadow-[0_0_5px_#4ec9b0]' : 'bg-gray-500'}`} />
-            <span className="text-[11px] font-medium text-gray-300 tracking-wide">
-              Proxying on 127.0.0.1:8888
-            </span>
-            <AlertCircle size={12} className="text-yellow-500 ml-1" />
-            <Smartphone size={12} className="text-gray-400 ml-1" />
-            <PenTool size={12} className="text-gray-400" />
-          </div>
+        {/* 2.1 Top Header - Reqable 风格顶部栏 */}
+        <div className="h-11 bg-[#252526] border-b border-[#3c3c3c] flex items-center px-3 gap-2 shrink-0">
+          {/* 代理状态栏 */}
+          <ProxyStatusBar
+            isRecording={isRecording}
+            onToggleRecording={() => setIsRecording(!isRecording)}
+          />
 
           <div className="flex-1" />
 
-          <div className="flex items-center gap-1 mr-2">
+          {/* 工具栏 - 按功能分组 */}
+          <div className="flex items-center gap-0.5">
+            {/* 调试工具组 */}
             <button
               data-testid="reqable-tab-composer"
               onClick={handleNewComposerTab}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="New Composer Tab"
+              className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d] transition-colors"
+              title="Composer"
             >
-              <PenTool size={16} />
+              <PenTool size={15} />
             </button>
-            <div className="w-px h-4 bg-[#333] mx-1" />
             <button
               onClick={toggleBreakpoint}
-              className={`p-1.5 rounded hover:bg-[#333] transition-colors ${breakpointActive ? 'text-[#f48771] bg-[#333]' : 'text-gray-400 hover:text-white'}`}
-              title="Toggle Breakpoints"
+              className={`p-1.5 rounded hover:bg-[#37373d] transition-colors ${breakpointActive ? 'text-[#f48771] bg-[#37373d]' : 'text-[#858585] hover:text-[#cccccc]'}`}
+              title="Breakpoints"
             >
-              <Pause size={16} fill={breakpointActive ? "currentColor" : "none"} />
+              <Pause size={15} fill={breakpointActive ? "currentColor" : "none"} />
             </button>
-            <button
-              onClick={() => setShowBreakpointRules(true)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Breakpoint Rules"
-            >
-              <List size={16} />
-            </button>
-            <button
-              onClick={() => setShowRewriteRules(true)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Rewrite Rules"
-            >
-              <RefreshCw size={16} />
-            </button>
-            <button
-              onClick={() => setShowMapLocalRules(true)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Map Local Rules"
-            >
-              <FolderTree size={16} />
-            </button>
-            <div className="w-px h-4 bg-[#333] mx-1" />
-            <button
-              onClick={() => setShowGatewayRules(true)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Gateway Rules"
-            >
-              <Shield size={16} />
-            </button>
-            <button
-              onClick={() => setShowMirrorRules(true)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Mirror Rules"
-            >
-              <ArrowRight size={16} />
-            </button>
-            <button
-              onClick={() => setShowHighlightRules(true)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Highlight Rules"
-            >
-              <Highlighter size={16} />
-            </button>
-            <button className="p-1.5 text-gray-400 hover:text-white rounded hover:bg-[#333]"><Filter size={16} /></button>
-            <button 
-              onClick={() => downloadHAR(requests)}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Export as HAR"
-            >
-              <Download size={16} />
-            </button>
-            <button 
-              onClick={handleImportHAR}
-              className="p-1.5 text-gray-400 hover:text-[#fcd34d] rounded hover:bg-[#333] transition-colors"
-              title="Import HAR"
-            >
-              <FileJson size={16} />
-            </button>
+            
+            <div className="w-px h-4 bg-[#3c3c3c] mx-1" />
+            
+            {/* 规则配置组 */}
+            <button onClick={() => setShowBreakpointRules(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Breakpoint Rules"><List size={15} /></button>
+            <button onClick={() => setShowRewriteRules(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Rewrite"><RefreshCw size={15} /></button>
+            <button onClick={() => setShowMapLocalRules(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Map Local"><FolderTree size={15} /></button>
+            <button onClick={() => setShowGatewayRules(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Gateway"><Shield size={15} /></button>
+            
+            <div className="w-px h-4 bg-[#3c3c3c] mx-1" />
+            
+            {/* 高级功能组 */}
+            <button onClick={() => setShowMirrorRules(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Mirror"><ArrowRight size={15} /></button>
+            <button onClick={() => setShowHighlightRules(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Highlight"><Highlighter size={15} /></button>
+            <button onClick={() => setShowNetworkThrottle(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Throttle"><Gauge size={15} /></button>
+            <button onClick={() => setShowDiffViewer(true)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Diff"><GitCompare size={15} /></button>
+            
+            <div className="w-px h-4 bg-[#3c3c3c] mx-1" />
+            
+            {/* 导入导出组 */}
+            <button onClick={() => downloadHAR(requests)} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Export HAR"><Download size={15} /></button>
+            <button onClick={handleImportHAR} className="p-1.5 text-[#858585] hover:text-[#cccccc] rounded hover:bg-[#37373d]" title="Import HAR"><FileJson size={15} /></button>
           </div>
           
           {/* Hidden File Input for HAR Import */}
@@ -453,85 +444,50 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
             onChange={handleFileChange}
           />
 
-          <button
-            onClick={() => setIsRecording(!isRecording)}
-            className="h-8 px-6 bg-[#fcd34d] hover:bg-[#fbbf24] text-black text-[13px] font-bold rounded-[4px] transition-colors flex items-center justify-center shadow-sm active:translate-y-0.5"
+          {/* 清空按钮 */}
+          <button 
+            onClick={onClear} 
+            className="p-1.5 text-[#858585] hover:text-[#f48771] rounded hover:bg-[#37373d] transition-colors ml-1"
+            title="Clear"
           >
-            {isRecording ? '停止' : '开始'}
-          </button>
-
-          <button onClick={onClear} className="h-8 w-8 flex items-center justify-center bg-[#333] hover:bg-[#444] text-gray-300 rounded-[4px] ml-1">
-            <Trash2 size={16} />
+            <Trash2 size={15} />
           </button>
         </div>
 
-        {/* 2.2 Dynamic Tab Bar */}
-        <div className="h-9 bg-[#252526] border-b border-[#111] flex items-center px-2 pt-1 gap-1 shrink-0 overflow-x-auto">
-          {tabs.map(tab => (
-            <div
-              key={tab.id}
-              onClick={() => setActiveTabId(tab.id)}
-              className={`relative group px-3 py-1.5 min-w-[100px] max-w-[200px] text-[12px] rounded-t border-t-2 cursor-pointer flex items-center gap-2 select-none ${activeTabId === tab.id
-                ? 'bg-[#1e1e1e] text-[#fcd34d] border-[#fcd34d] font-medium'
-                : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-[#333]'
-                }`}
-            >
-              {tab.type === 'traffic' && <Wifi size={12} />}
-              {tab.type === 'composer' && <PenTool size={12} />}
-              {tab.type === 'script' && <Code size={12} />}
-              <span className="truncate">{tab.title}</span>
-              {tab.type !== 'traffic' && (
-                <button
-                  onClick={(e) => handleCloseTab(tab.id, e)}
-                  className="ml-auto opacity-0 group-hover:opacity-100 hover:text-white"
-                >
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-          ))}
-
-          <button
-            onClick={handleNewComposerTab}
-            className="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-[#333] hover:text-white rounded ml-1 transition-colors"
-          >
-            <Plus size={14} />
-          </button>
-        </div>
+        {/* 2.2 Tab Bar - 使用新组件 */}
+        <TabBar
+          tabs={tabs as Tab[]}
+          activeTabId={activeTabId}
+          requestCount={filteredRequests.length}
+          onSelectTab={setActiveTabId}
+          onCloseTab={(id) => {
+            if (tabs.length > 1) {
+              const newTabs = tabs.filter(t => t.id !== id);
+              setTabs(newTabs);
+              if (activeTabId === id) {
+                setActiveTabId(newTabs[0].id);
+              }
+            }
+          }}
+          onNewTab={handleNewComposerTab}
+        />
 
         {/* 2.3 Main Workspace */}
         {activeTab.type === 'traffic' && (
           <div className="flex-1 flex flex-col min-h-0">
-            {/* Filters */}
-            <div className="h-9 bg-[#1e1e1e] border-b border-[#333] flex items-center px-3 gap-2 shrink-0">
-              <FilterChip label="All" active={filter === 'All'} onClick={() => setFilter('All')} />
-              <div className="w-px h-3 bg-[#333] mx-0.5" />
-              <FilterChip label="Http" active={filter === 'Http'} onClick={() => setFilter('Http')} />
-              <FilterChip label="Https" active={filter === 'Https'} onClick={() => setFilter('Https')} />
-              <FilterChip label="Websocket" active={filter === 'Websocket'} onClick={() => setFilter('Websocket')} />
-              <div className="w-px h-3 bg-[#333] mx-0.5" />
-              <FilterChip label="JSON" active={filter === 'JSON'} onClick={() => setFilter('JSON')} />
-              <FilterChip label="图片" active={filter === '图片'} onClick={() => setFilter('图片')} />
-
-              <div className="flex-1" />
-
-              <div className="relative">
-                <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Search..."
-                  className="bg-[#252526] border border-[#333] rounded-full pl-7 pr-3 py-0.5 text-[11px] text-gray-300 outline-none focus:border-[#555] w-40"
-                />
-              </div>
-            </div>
+            {/* Filters - 使用新的 FilterTabs 组件 */}
+            <FilterTabs
+              activeFilter={filter}
+              onFilterChange={(f) => setFilter(f as ContentFilter)}
+              searchText={searchText}
+              onSearchChange={setSearchText}
+            />
 
             {/* Traffic List & Details Split */}
             <div className="flex-1 flex min-h-0">
 
               {/* LEFT PANE: Request List Table */}
-              <div className={`flex flex-col min-w-0 border-r border-[#333] ${selectedRequest ? 'w-[55%]' : 'flex-1'}`}>
+              <div className={`flex flex-col min-w-0 border-r border-[#3c3c3c] ${selectedRequest ? 'w-[55%]' : 'flex-1'}`}>
                 <TrafficList
                   filteredRequests={filteredRequests}
                   selectedRequestId={selectedRequestId}
@@ -557,6 +513,14 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
                 />
               )}
             </div>
+
+            {/* 底部状态栏 */}
+            <StatusBar
+              totalCount={filteredRequests.length}
+              selectedCount={selectedRequest ? 1 : 0}
+              protocol={selectedRequest?.protocol}
+              statusCode={selectedRequest?.status}
+            />
           </div>
         )}
 
@@ -786,6 +750,36 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
       {/* Highlight Rules Dialog */}
       {showHighlightRules && (
         <HighlightRules onClose={() => setShowHighlightRules(false)} />
+      )}
+
+      {/* Network Throttle Dialog */}
+      {showNetworkThrottle && (
+        <NetworkThrottle onClose={() => setShowNetworkThrottle(false)} />
+      )}
+
+      {/* Diff Viewer Dialog */}
+      {showDiffViewer && (
+        <DiffViewer requests={requests} onClose={() => setShowDiffViewer(false)} />
+      )}
+
+      {/* Access Control Dialog */}
+      {showAccessControl && (
+        <AccessControl onClose={() => setShowAccessControl(false)} />
+      )}
+
+      {/* Proxy Terminal Dialog */}
+      {showProxyTerminal && (
+        <ProxyTerminal onClose={() => setShowProxyTerminal(false)} />
+      )}
+
+      {/* Turbo Mode Dialog */}
+      {showTurboMode && (
+        <TurboMode onClose={() => setShowTurboMode(false)} />
+      )}
+
+      {/* Reverse Proxy Dialog */}
+      {showReverseProxy && (
+        <ReverseProxy onClose={() => setShowReverseProxy(false)} />
       )}
 
     </div>

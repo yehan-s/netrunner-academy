@@ -52,7 +52,7 @@ export const KeyValEditor: React.FC<KeyValEditorProps> = ({ items, onChange }) =
                   type="checkbox"
                   checked={item.enabled}
                   onChange={() => handleToggle(idx)}
-                  className="accent-[#fcd34d]"
+                  className="accent-[#4ec9b0]"
                 />
               )}
             </div>

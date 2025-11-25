@@ -11,9 +11,12 @@ test.describe('WeChat 剧情模式 - 剧情 1 与 Story 关卡联动', () => {
   test('剧情 gating 与 story_01_login_outage 通关状态一致', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
+
     // 1. 打开 WeChat 剧情模式
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-
+    await page.waitForTimeout(500); // 等待模式切换
     // 选择“周五晚高峰 · 微信投放引发的连锁事故”剧情
     await page
       .getByText('周五晚高峰 · 微信投放引发的连锁事故')
@@ -33,7 +36,10 @@ test.describe('WeChat 剧情模式 - 剧情 1 与 Story 关卡联动', () => {
 
     for (let i = 0; i < 10; i++) {
       if (await taskButton.isVisible()) break;
-      await page.getByRole('button', { name: '下一条消息' }).click();
+      const nextBtn = page.getByRole('button', { name: '下一条消息' });
+      if (!(await nextBtn.isVisible())) break; // 如果按钮变成禁用状态，停止循环
+      await nextBtn.click();
+      await page.waitForTimeout(1200); // 等待 typing 动画
     }
 
     await expect(taskButton).toBeVisible();
@@ -76,7 +82,7 @@ test.describe('WeChat 剧情模式 - 剧情 1 与 Story 关卡联动', () => {
 
     // 4. 返回 WeChat，确认剧情按钮解锁，可以继续推进
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-
+    await page.waitForTimeout(500); // 等待模式切换
     // 直接处于群聊视图，此时按钮文案应从“请先完成上一个任务”变为“下一条消息”
     const nextBtn = page.getByRole('button', { name: '下一条消息' });
     await expect(nextBtn).toBeVisible();

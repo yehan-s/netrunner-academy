@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { NetworkRequest } from '../../types';
 import { ObjectExplorer } from '../ObjectExplorer';
+import { Copy, Check } from 'lucide-react';
 
-export type DetailTab = 'overview' | 'primitive' | 'params' | 'headers' | 'cookies' | 'body';
+export type DetailTab = 'summary' | 'headers' | 'body';
+type BodyViewMode = 'pretty' | 'raw' | 'hex';
 
 export interface TrafficDetailProps {
   selectedRequest: NetworkRequest;
@@ -11,114 +13,158 @@ export interface TrafficDetailProps {
   formatSize: (bytes: number) => string;
 }
 
+// 复制按钮组件
+const CopyButton: React.FC<{ text: string }> = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <button onClick={handleCopy} className="p-0.5 text-[#858585] hover:text-[#cccccc] transition-colors">
+      {copied ? <Check size={10} className="text-[#4ec9b0]" /> : <Copy size={10} />}
+    </button>
+  );
+};
+
 export const TrafficDetail: React.FC<TrafficDetailProps> = ({
   selectedRequest,
   getMethodColor,
   getStatusColor,
   formatSize
 }) => {
-  const [detailTab, setDetailTab] = useState<DetailTab>('overview');
-  const [reqBodyViewMode, setReqBodyViewMode] = useState<'pretty' | 'raw' | 'preview'>('pretty');
-  const [resBodyViewMode, setResBodyViewMode] = useState<'pretty' | 'raw' | 'preview'>('pretty');
+  const [detailTab, setDetailTab] = useState<DetailTab>('summary');
+  const [reqBodyViewMode, setReqBodyViewMode] = useState<BodyViewMode>('pretty');
+  const [resBodyViewMode, setResBodyViewMode] = useState<BodyViewMode>('pretty');
+
+  const reqHeadersCount = Object.keys(selectedRequest.requestHeaders || {}).length;
+  const resHeadersCount = Object.keys(selectedRequest.responseHeaders || {}).length;
 
   return (
     <div className="w-[45%] flex flex-col min-w-0 bg-[#1e1e1e]">
       {/* TOP: Request Detail */}
-      <div className="flex-1 flex flex-col min-h-0 border-b border-[#333]">
-        <div className="h-8 bg-[#252526] flex items-center px-2 border-b border-[#111]">
-          {['Overview', 'Primitive', 'Params', 'Headers', 'Cookies', 'Body'].map(t => {
-            const isActive = t.toLowerCase() === detailTab;
+      <div className="flex-1 flex flex-col min-h-0 border-b border-[#3c3c3c]">
+        {/* Tab Bar - Reqable 风格 */}
+        <div className="h-8 bg-[#252526] flex items-center px-1 border-b border-[#3c3c3c]">
+          {[
+            { key: 'summary', label: 'Summary' },
+            { key: 'headers', label: `Headers(${reqHeadersCount})` },
+            { key: 'body', label: 'Body' }
+          ].map(t => {
+            const isActive = t.key === detailTab;
             return (
               <button
-                key={t}
-                onClick={() => setDetailTab(t.toLowerCase() as DetailTab)}
-                className={`px-3 py-1 text-[11px] rounded-[2px] ${isActive ? 'text-[#fcd34d] font-bold bg-[#333]' : 'text-gray-500 hover:text-gray-300'}`}
+                key={t.key}
+                onClick={() => setDetailTab(t.key as DetailTab)}
+                className={`px-3 py-1.5 text-[11px] transition-colors ${
+                  isActive 
+                    ? 'text-[#cccccc] bg-[#1e1e1e] border-t-2 border-t-[#4ec9b0]' 
+                    : 'text-[#858585] hover:text-[#cccccc]'
+                }`}
               >
-                {t}
+                {t.label}
               </button>
             )
           })}
           <div className="flex-1" />
-          <div className={`text-[10px] px-1.5 py-0.5 bg-[#333] rounded font-mono ${getMethodColor(selectedRequest.method)}`}>{selectedRequest.method}</div>
+          <div className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-medium ${getMethodColor(selectedRequest.method)}`}>
+            {selectedRequest.method}
+          </div>
         </div>
 
         <div className="flex-1 overflow-auto p-3 font-mono text-[11px]">
-          {detailTab === 'overview' && (
-            <div className="grid grid-cols-[100px_1fr] gap-y-1.5 text-[#cccccc]">
-              <div className="text-gray-500">URL</div>
-              <div className="break-all select-text">{selectedRequest.url}</div>
-              <div className="text-gray-500">Method</div>
-              <div>{selectedRequest.method}</div>
-              <div className="text-gray-500">Status</div>
-              <div style={{ color: getStatusColor(selectedRequest.status || 0) }}>{selectedRequest.status}</div>
-              <div className="text-gray-500">Protocol</div>
-              <div>{selectedRequest.protocol || 'HTTP/1.1'}</div>
-              <div className="text-gray-500">Remote Address</div>
-              <div>{selectedRequest.remoteAddress || '127.0.0.1:443'}</div>
-              <div className="text-gray-500">Time</div>
-              <div>{selectedRequest.time}ms</div>
-            </div>
-          )}
-          {detailTab === 'headers' && (
-            <div>
-              {Object.entries(selectedRequest.requestHeaders || {}).map(([k, v]) => (
-                <div key={k} className="flex mb-1 border-b border-[#333]/50 pb-0.5">
-                  <span className="text-[#9cdcfe] min-w-[100px] font-medium select-text">{k}</span>
-                  <span className="text-[#ce9178] break-all flex-1 select-text">{v}</span>
+          {/* Summary 面板 - Reqable 风格表格 */}
+          {detailTab === 'summary' && (
+            <div className="space-y-0">
+              {[
+                { label: 'URL', value: selectedRequest.url },
+                { label: 'Status', value: selectedRequest.status ? `${selectedRequest.status} ${selectedRequest.statusText || ''}` : 'Pending', color: getStatusColor(selectedRequest.status || 0) },
+                { label: 'Method', value: selectedRequest.method, color: getMethodColor(selectedRequest.method).replace('text-', '') },
+                { label: 'Protocol', value: selectedRequest.protocol || 'HTTP/1.1' },
+                { label: 'Code', value: selectedRequest.status || '-' },
+                { label: 'Remote Address', value: selectedRequest.remoteAddress || '127.0.0.1:443' },
+                { label: 'Size', value: formatSize(selectedRequest.size || 0) },
+                { label: 'Time', value: `${selectedRequest.time || 0}ms` },
+              ].map((row, idx) => (
+                <div key={idx} className="flex items-center py-1.5 border-b border-[#3c3c3c]/50 group">
+                  <div className="w-[120px] text-[#858585] shrink-0">{row.label}</div>
+                  <div 
+                    className="flex-1 text-[#cccccc] break-all select-text"
+                    style={row.color ? { color: row.color } : undefined}
+                  >
+                    {row.value}
+                  </div>
+                  <CopyButton text={String(row.value)} />
                 </div>
               ))}
             </div>
           )}
-          {detailTab === 'cookies' && (
-            <div>
-              {selectedRequest.cookies && Object.keys(selectedRequest.cookies).length > 0 ? (
-                Object.entries(selectedRequest.cookies).map(([k, v]) => (
-                  <div key={k} className="flex mb-1 border-b border-[#333]/50 pb-0.5">
-                    <span className="text-[#dcdcaa] min-w-[100px] font-medium select-text">{k}</span>
-                    <span className="text-[#ce9178] break-all flex-1 select-text">{v}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="text-gray-500 italic">No cookies in request</div>
-              )}
+
+          {/* Headers 面板 */}
+          {detailTab === 'headers' && (
+            <div className="space-y-0">
+              {Object.entries(selectedRequest.requestHeaders || {}).map(([k, v]) => (
+                <div key={k} className="flex items-start py-1.5 border-b border-[#3c3c3c]/50 group">
+                  <span className="text-[#4ec9b0] min-w-[140px] shrink-0 select-text">{k}</span>
+                  <span className="text-[#cccccc] break-all flex-1 select-text">{v}</span>
+                  <CopyButton text={`${k}: ${v}`} />
+                </div>
+              ))}
             </div>
           )}
+
+          {/* Body 面板 */}
           {detailTab === 'body' && (
-            <div className="flex flex-col h-full">
-              {/* Request Body Sub-Toolbar */}
-              <div className="flex items-center gap-2 px-2 py-1 border-b border-[#333] mb-2">
-                {['Pretty', 'Raw', 'Preview'].map(mode => (
+            <div className="flex flex-col h-full -m-3">
+              {/* Body 工具栏 */}
+              <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#3c3c3c] bg-[#252526]">
+                {(['pretty', 'raw', 'hex'] as BodyViewMode[]).map(mode => (
                   <button
                     key={mode}
-                    onClick={() => setReqBodyViewMode(mode.toLowerCase() as any)}
-                    className={`text-[10px] px-2 py-0.5 rounded ${reqBodyViewMode === mode.toLowerCase() ? 'bg-[#333] text-[#fcd34d]' : 'text-gray-500 hover:text-gray-300'}`}
+                    onClick={() => setReqBodyViewMode(mode)}
+                    className={`text-[10px] px-2 py-0.5 rounded capitalize ${
+                      reqBodyViewMode === mode 
+                        ? 'bg-[#37373d] text-[#cccccc]' 
+                        : 'text-[#858585] hover:text-[#cccccc]'
+                    }`}
                   >
-                    {mode}
+                    {mode === 'pretty' ? 'Pretty' : mode === 'raw' ? 'Raw' : 'Hex'}
                   </button>
                 ))}
-                <div className="w-px h-3 bg-[#333] mx-1" />
-                <span className="text-[10px] text-gray-500">{selectedRequest.requestHeaders?.['content-type'] || 'text/plain'}</span>
+                <div className="flex-1" />
+                <span className="text-[10px] text-[#858585]">
+                  {selectedRequest.requestHeaders?.['content-type'] || 'text/plain'}
+                </span>
               </div>
 
-              <div className="flex-1 overflow-auto text-[#d4d4d4] whitespace-pre-wrap break-all select-text p-1">
+              <div className="flex-1 overflow-auto p-3 text-[#cccccc]">
                 {(() => {
                   const contentType = selectedRequest.requestHeaders?.['content-type'] || '';
                   const isJson = contentType.includes('json');
+                  const body = selectedRequest.requestBody || '';
 
-                  if (reqBodyViewMode === 'raw') {
-                    return <div className="font-mono text-[11px]">{selectedRequest.requestBody}</div>;
+                  if (reqBodyViewMode === 'hex') {
+                    const hex = Array.from(new TextEncoder().encode(body))
+                      .map(b => b.toString(16).padStart(2, '0'))
+                      .join(' ');
+                    return <div className="font-mono text-[11px] text-[#858585]">{hex || '<Empty>'}</div>;
                   }
 
-                  if (isJson && reqBodyViewMode === 'pretty') {
+                  if (reqBodyViewMode === 'raw') {
+                    return <div className="font-mono text-[11px] whitespace-pre-wrap">{body || '<No Body>'}</div>;
+                  }
+
+                  if (isJson && body) {
                     try {
-                      const json = JSON.parse(selectedRequest.requestBody || '{}');
+                      const json = JSON.parse(body);
                       return <ObjectExplorer data={json} theme="reqable" />;
-                    } catch (e) {
-                      return <div className="text-red-400 text-xs">Invalid JSON</div>;
+                    } catch {
+                      return <div className="text-[#f48771] text-xs">Invalid JSON</div>;
                     }
                   }
 
-                  return <div className="font-mono text-[11px]">{selectedRequest.requestBody || '<No Body>'}</div>;
+                  return <div className="font-mono text-[11px] whitespace-pre-wrap">{body || '<No Body>'}</div>;
                 })()}
               </div>
             </div>
@@ -128,72 +174,97 @@ export const TrafficDetail: React.FC<TrafficDetailProps> = ({
 
       {/* BOTTOM: Response Detail */}
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="h-8 bg-[#252526] flex items-center px-2 border-b border-[#111] gap-2">
-          <div className="text-[11px] font-bold text-gray-400 px-2">Response</div>
+        {/* Response Header Bar */}
+        <div className="h-8 bg-[#252526] flex items-center px-3 border-b border-[#3c3c3c]">
+          <div className="text-[11px] font-medium text-[#858585]">Response</div>
           <div className="flex-1" />
-          <div className="flex gap-1">
-            <span className="px-1 bg-[#333] text-[#4ec9b0] text-[10px] rounded">h2</span>
-            <span className="px-1 bg-[#333] text-[#4ec9b0] text-[10px] rounded">{selectedRequest.status}</span>
+          <div className="flex items-center gap-2">
+            <span className="px-1.5 py-0.5 bg-[#37373d] text-[#cccccc] text-[10px] rounded font-mono">
+              {selectedRequest.protocol || 'h2'}
+            </span>
+            <span 
+              className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium"
+              style={{ 
+                backgroundColor: `${getStatusColor(selectedRequest.status || 0)}20`,
+                color: getStatusColor(selectedRequest.status || 0)
+              }}
+            >
+              {selectedRequest.status || '-'}
+            </span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-2 font-mono text-[11px]">
-          {/* Simplified Response View for now - just Body and Headers */}
-          <div className="mb-2 text-[#fcd34d] font-bold">Headers</div>
-          {Object.entries(selectedRequest.responseHeaders).map(([k, v]) => (
-            <div key={k} className="flex mb-1 border-b border-[#333]/50 pb-0.5">
-              <span className="text-[#9cdcfe] min-w-[100px] font-medium select-text">{k}</span>
-              <span className="text-[#ce9178] break-all flex-1 select-text">{v}</span>
-            </div>
-          ))}
-          <div className="mt-4 mb-2 text-[#fcd34d] font-bold">Body</div>
-          <div className="flex flex-col h-full min-h-[200px]">
-            {/* Response Body Sub-Toolbar */}
-            <div className="flex items-center gap-2 px-2 py-1 border-b border-[#333] mb-2">
-              {['Pretty', 'Raw', 'Preview'].map(mode => (
+        {/* Response Tabs */}
+        <div className="h-7 bg-[#252526] flex items-center px-1 border-b border-[#3c3c3c]">
+          <button className="px-3 py-1 text-[11px] text-[#cccccc] bg-[#1e1e1e] border-t-2 border-t-[#4ec9b0]">
+            Headers({resHeadersCount})
+          </button>
+          <button className="px-3 py-1 text-[11px] text-[#858585] hover:text-[#cccccc]">
+            Body
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-auto p-3 font-mono text-[11px]">
+          {/* Response Headers */}
+          <div className="space-y-0">
+            {Object.entries(selectedRequest.responseHeaders || {}).map(([k, v]) => (
+              <div key={k} className="flex items-start py-1.5 border-b border-[#3c3c3c]/50 group">
+                <span className="text-[#4ec9b0] min-w-[140px] shrink-0 select-text">{k}</span>
+                <span className="text-[#cccccc] break-all flex-1 select-text">{v}</span>
+                <CopyButton text={`${k}: ${v}`} />
+              </div>
+            ))}
+          </div>
+
+          {/* Response Body Section */}
+          <div className="mt-4 pt-3 border-t border-[#3c3c3c]">
+            <div className="flex items-center gap-1 mb-3">
+              {(['pretty', 'raw', 'hex'] as BodyViewMode[]).map(mode => (
                 <button
                   key={mode}
-                  onClick={() => setResBodyViewMode(mode.toLowerCase() as any)}
-                  className={`text-[10px] px-2 py-0.5 rounded ${resBodyViewMode === mode.toLowerCase() ? 'bg-[#333] text-[#fcd34d]' : 'text-gray-500 hover:text-gray-300'}`}
+                  onClick={() => setResBodyViewMode(mode)}
+                  className={`text-[10px] px-2 py-0.5 rounded capitalize ${
+                    resBodyViewMode === mode 
+                      ? 'bg-[#37373d] text-[#cccccc]' 
+                      : 'text-[#858585] hover:text-[#cccccc]'
+                  }`}
                 >
-                  {mode}
+                  {mode === 'pretty' ? 'Pretty' : mode === 'raw' ? 'Raw' : 'Hex'}
                 </button>
               ))}
-              <div className="w-px h-3 bg-[#333] mx-1" />
-              <span className="text-[10px] text-gray-500">{selectedRequest.responseHeaders['content-type'] || 'text/plain'}</span>
+              <div className="flex-1" />
+              <span className="text-[10px] text-[#858585]">
+                {selectedRequest.responseHeaders?.['content-type'] || 'text/plain'}
+              </span>
             </div>
 
-            <div className="flex-1 overflow-auto text-[#d4d4d4] whitespace-pre-wrap break-all select-text p-1">
+            <div className="text-[#cccccc]">
               {(() => {
-                const contentType = selectedRequest.responseHeaders['content-type'] || '';
+                const contentType = selectedRequest.responseHeaders?.['content-type'] || '';
                 const isJson = contentType.includes('json');
-                const isImage = contentType.includes('image');
+                const body = selectedRequest.responseBody || '';
+
+                if (resBodyViewMode === 'hex') {
+                  const hex = Array.from(new TextEncoder().encode(body))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join(' ');
+                  return <div className="font-mono text-[11px] text-[#858585]">{hex || '<Empty>'}</div>;
+                }
 
                 if (resBodyViewMode === 'raw') {
-                  return <div className="font-mono text-[11px]">{selectedRequest.responseBody}</div>;
+                  return <div className="font-mono text-[11px] whitespace-pre-wrap">{body || '<No Body>'}</div>;
                 }
 
-                if (isImage && (resBodyViewMode === 'pretty' || resBodyViewMode === 'preview')) {
-                  return (
-                    <div className="flex flex-col items-center justify-center p-4">
-                      <div className="border border-[#333] bg-[url('https://reqable.com/assets/transparent-grid.png')] p-2">
-                        <img src={selectedRequest.url} alt="Preview" className="max-w-full max-h-[200px] object-contain" />
-                      </div>
-                      <div className="mt-2 text-xs text-gray-500">{formatSize(selectedRequest.size)}</div>
-                    </div>
-                  );
-                }
-
-                if (isJson && resBodyViewMode === 'pretty') {
+                if (isJson && body) {
                   try {
-                    const json = JSON.parse(selectedRequest.responseBody || '{}');
+                    const json = JSON.parse(body);
                     return <ObjectExplorer data={json} theme="reqable" />;
-                  } catch (e) {
-                    return <div className="text-red-400 text-xs">Invalid JSON</div>;
+                  } catch {
+                    return <div className="text-[#f48771] text-xs">Invalid JSON</div>;
                   }
                 }
 
-                return <div className="font-mono text-[11px]">{selectedRequest.responseBody}</div>;
+                return <div className="font-mono text-[11px] whitespace-pre-wrap">{body || '<No Body>'}</div>;
               })()}
             </div>
           </div>

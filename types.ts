@@ -138,3 +138,81 @@ export interface Level {
     guide: string;
   };
 }
+
+// Network Throttling Configuration
+export interface ThrottleConfig {
+  id: string;
+  name: string;
+  enabled: boolean;
+  // Download speed in KB/s (0 = no limit)
+  downloadSpeed: number;
+  // Upload speed in KB/s (0 = no limit)
+  uploadSpeed: number;
+  // Latency in ms (added delay to each request)
+  latency: number;
+  // Packet loss percentage (0-100)
+  packetLoss: number;
+  // Is this a preset or custom config
+  isPreset?: boolean;
+}
+
+// Diff comparison result
+export interface DiffResult {
+  id: string;
+  timestamp: number;
+  leftRequest: NetworkRequest;
+  rightRequest: NetworkRequest;
+  differences: {
+    field: string;
+    leftValue: string;
+    rightValue: string;
+  }[];
+}
+
+// Access Control Rule (Blacklist/Whitelist)
+export interface AccessControlRule {
+  id: string;
+  name: string;
+  pattern: string; // URL or domain pattern with wildcard support
+  type: 'blacklist' | 'whitelist';
+  matchType: 'domain' | 'url' | 'ip';
+  enabled: boolean;
+  description?: string;
+}
+
+// Proxy Terminal Configuration
+export interface ProxyConfig {
+  enabled: boolean;
+  host: string;
+  port: number;
+  protocol: 'http' | 'https' | 'socks5';
+  requireAuth: boolean;
+  username?: string;
+  password?: string;
+  bypassList: string[]; // Domains to bypass proxy
+}
+
+// Turbo Mode Configuration
+export interface TurboModeConfig {
+  enabled: boolean;
+  disableImages: boolean;
+  disableScripts: boolean;
+  disableFonts: boolean;
+  disableStylesheets: boolean;
+  compressionLevel: 'none' | 'low' | 'medium' | 'high';
+  cacheEnabled: boolean;
+  maxConcurrentRequests: number;
+}
+
+// Reverse Proxy Rule
+export interface ReverseProxyRule {
+  id: string;
+  name: string;
+  enabled: boolean;
+  listenPath: string; // e.g., "/api/*"
+  targetUrl: string; // e.g., "https://backend.example.com"
+  rewritePath: boolean; // Whether to rewrite the path
+  addHeaders: Record<string, string>;
+  removeHeaders: string[];
+  description?: string;
+}

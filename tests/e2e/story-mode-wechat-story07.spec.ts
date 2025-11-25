@@ -6,6 +6,8 @@ test.describe('Story 07 - 支付回调被 WAF 拦截', () => {
   test('通过临时放行 Header 触发回调成功', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
     await page.getByText('剧情 · 支付回调被 WAF 拦截').click();
 

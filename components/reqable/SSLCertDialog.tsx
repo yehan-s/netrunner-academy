@@ -33,9 +33,9 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
     <div className="space-y-4">
       <div className="bg-[#252526] border border-[#333] rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Shield size={20} className="text-[#fcd34d] mt-0.5" />
+          <Shield size={20} className="text-[#4ec9b0] mt-0.5" />
           <div>
-            <h4 className="text-sm font-bold text-[#fcd34d] mb-1">为什么需要安装证书？</h4>
+            <h4 className="text-sm font-bold text-[#4ec9b0] mb-1">为什么需要安装证书？</h4>
             <p className="text-xs text-gray-400">
               HTTPS 流量经过加密，抓包工具需要你的设备信任它的证书才能解密流量（合法的中间人）。
             </p>
@@ -45,7 +45,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
 
       <div className="space-y-3">
         <div className="flex items-start gap-3">
-          <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
+          <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
           <div className="flex-1">
             <h5 className="text-sm font-bold text-white mb-1">导出 Reqable 证书</h5>
             <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -57,7 +57,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
+          <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
           <div className="flex-1">
             <h5 className="text-sm font-bold text-white mb-1">安装到系统钥匙串</h5>
             <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -69,14 +69,14 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
+          <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
           <div className="flex-1">
             <h5 className="text-sm font-bold text-white mb-1">信任证书 ⚠️ 关键步骤</h5>
             <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
               <li>打开 <code className="bg-[#1e1e1e] px-1 rounded">"钥匙串访问"</code> 应用</li>
               <li>左侧选择 <code className="bg-[#1e1e1e] px-1 rounded">"系统"</code> → <code className="bg-[#1e1e1e] px-1 rounded">"证书"</code></li>
               <li>找到 <code className="bg-[#1e1e1e] px-1 rounded text-[#4ec9b0]">"Reqable Root CA"</code></li>
-              <li>双击 → 展开 "信任" → 改为 <strong className="text-[#fcd34d]">"始终信任"</strong></li>
+              <li>双击 → 展开 "信任" → 改为 <strong className="text-[#4ec9b0]">"始终信任"</strong></li>
             </ul>
             <div className="mt-2 flex items-center gap-2 text-xs text-[#4ec9b0]">
               <CheckCircle size={14} />
@@ -91,7 +91,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
   const renderWindowsSteps = () => (
     <div className="space-y-3">
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">安装证书</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -103,19 +103,19 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">选择证书存储</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
             <li>选择 <code className="bg-[#1e1e1e] px-1 rounded">"将所有的证书都放入下列存储"</code></li>
-            <li>点击 <code className="bg-[#1e1e1e] px-1 rounded">"浏览"</code> → 选择 <strong className="text-[#fcd34d]">"受信任的根证书颁发机构"</strong></li>
+            <li>点击 <code className="bg-[#1e1e1e] px-1 rounded">"浏览"</code> → 选择 <strong className="text-[#4ec9b0]">"受信任的根证书颁发机构"</strong></li>
             <li>点击 <code className="bg-[#1e1e1e] px-1 rounded">"完成"</code></li>
           </ul>
         </div>
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">验证安装</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -140,7 +140,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">配置 Wi-Fi 代理</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -153,7 +153,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">下载并安装证书</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -165,12 +165,12 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">启用完全信任 (iOS 10.3+)</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
             <li><code className="bg-[#1e1e1e] px-1 rounded">设置</code> → <code className="bg-[#1e1e1e] px-1 rounded">通用</code> → <code className="bg-[#1e1e1e] px-1 rounded">关于本机</code></li>
-            <li>滚动到底部 → <code className="bg-[#1e1e1e] px-1 rounded text-[#fcd34d]">证书信任设置</code></li>
+            <li>滚动到底部 → <code className="bg-[#1e1e1e] px-1 rounded text-[#4ec9b0]">证书信任设置</code></li>
             <li>找到 <code className="bg-[#1e1e1e] px-1 rounded">"Reqable Root CA"</code> → 打开开关（变为绿色）</li>
           </ul>
         </div>
@@ -190,7 +190,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">1</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">配置 Wi-Fi 代理</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
@@ -202,20 +202,20 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">2</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">安装证书 (Android 7-10)</h5>
           <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
             <li>浏览器访问 <code className="bg-[#1e1e1e] px-1 rounded text-[#4ec9b0]">http://你的电脑IP:8888</code></li>
             <li>下载证书 <code className="bg-[#1e1e1e] px-1 rounded">Reqable-Root-CA.crt</code></li>
             <li><code className="bg-[#1e1e1e] px-1 rounded">设置</code> → <code className="bg-[#1e1e1e] px-1 rounded">安全</code> → <code className="bg-[#1e1e1e] px-1 rounded">"从存储设备安装"</code></li>
-            <li>凭据用途选择 <code className="bg-[#1e1e1e] px-1 rounded text-[#fcd34d]">"VPN 和应用"</code></li>
+            <li>凭据用途选择 <code className="bg-[#1e1e1e] px-1 rounded text-[#4ec9b0]">"VPN 和应用"</code></li>
           </ul>
         </div>
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-[#fcd34d] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
+        <div className="w-6 h-6 rounded-full bg-[#4ec9b0] text-black flex items-center justify-center text-xs font-bold shrink-0">3</div>
         <div className="flex-1">
           <h5 className="text-sm font-bold text-white mb-1">Android 11+ 解决方案</h5>
           <p className="text-xs text-gray-400 mb-2">修改应用的 <code className="bg-[#1e1e1e] px-1 rounded">network_security_config.xml</code>：</p>
@@ -249,7 +249,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#333]">
           <div className="flex items-center gap-3">
-            <Shield size={24} className="text-[#fcd34d]" />
+            <Shield size={24} className="text-[#4ec9b0]" />
             <div>
               <h3 className="text-lg font-bold text-white">SSL 证书管理</h3>
               <p className="text-xs text-gray-400">配置 HTTPS 抓包所需证书</p>
@@ -273,7 +273,7 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
               onClick={() => setSelectedPlatform(id)}
               className={`flex items-center gap-2 px-4 py-2 text-sm border-b-2 transition-colors ${
                 selectedPlatform === id
-                  ? 'text-[#fcd34d] border-[#fcd34d] font-bold'
+                  ? 'text-[#4ec9b0] border-[#4ec9b0] font-bold'
                   : 'text-gray-400 border-transparent hover:text-gray-200'
               }`}
             >
@@ -291,12 +291,12 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-[#333] bg-[#252526]">
           <div className="flex items-center gap-2 text-xs text-gray-400">
-            <AlertCircle size={14} className="text-[#fcd34d]" />
+            <AlertCircle size={14} className="text-[#4ec9b0]" />
             <span>抓包完成后请及时移除证书</span>
           </div>
           <button
             onClick={handleDownloadCert}
-            className="flex items-center gap-2 px-4 py-2 bg-[#fcd34d] text-black text-sm font-bold rounded hover:bg-[#fbbf24] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#4ec9b0] text-black text-sm font-bold rounded hover:bg-[#3db89f] transition-colors"
           >
             <Download size={16} />
             下载证书

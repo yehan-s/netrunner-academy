@@ -92,8 +92,8 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#3e3e42]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#fcd34d]/10 flex items-center justify-center">
-              <AlertCircle size={20} className="text-[#fcd34d]" />
+            <div className="w-10 h-10 rounded-lg bg-[#4ec9b0]/10 flex items-center justify-center">
+              <AlertCircle size={20} className="text-[#4ec9b0]" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">断点规则</h2>
@@ -122,7 +122,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
                 value={formData.name || ''}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="例: 拦截登录请求"
-                className="w-full bg-[#252526] border border-[#3e3e42] rounded px-3 py-1.5 text-sm text-white outline-none focus:border-[#fcd34d]"
+                className="w-full bg-[#252526] border border-[#3e3e42] rounded px-3 py-1.5 text-sm text-white outline-none focus:border-[#4ec9b0]"
               />
             </div>
 
@@ -133,7 +133,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
                 value={formData.urlPattern || ''}
                 onChange={e => setFormData(prev => ({ ...prev, urlPattern: e.target.value }))}
                 placeholder="例: */api/login"
-                className="w-full bg-[#252526] border border-[#3e3e42] rounded px-3 py-1.5 text-sm text-white outline-none focus:border-[#fcd34d]"
+                className="w-full bg-[#252526] border border-[#3e3e42] rounded px-3 py-1.5 text-sm text-white outline-none focus:border-[#4ec9b0]"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
               <select
                 value={formData.type || 'request'}
                 onChange={e => setFormData(prev => ({ ...prev, type: e.target.value as BreakpointRule['type'] }))}
-                className="bg-[#252526] border border-[#3e3e42] rounded px-3 py-1.5 text-sm text-white outline-none focus:border-[#fcd34d]"
+                className="bg-[#252526] border border-[#3e3e42] rounded px-3 py-1.5 text-sm text-white outline-none focus:border-[#4ec9b0]"
               >
                 <option value="request">Request</option>
                 <option value="response">Response</option>
@@ -158,7 +158,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
                 id="rule-enabled"
                 checked={formData.enabled !== false}
                 onChange={e => setFormData(prev => ({ ...prev, enabled: e.target.checked }))}
-                className="w-4 h-4 rounded border-[#3e3e42] bg-[#252526] checked:bg-[#fcd34d]"
+                className="w-4 h-4 rounded border-[#3e3e42] bg-[#252526] checked:bg-[#4ec9b0]"
               />
               <label htmlFor="rule-enabled" className="text-sm text-gray-300 cursor-pointer">
                 启用规则
@@ -171,7 +171,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
               <div className="flex gap-2 mt-5">
                 <button
                   onClick={handleUpdateRule}
-                  className="px-4 py-1.5 bg-[#fcd34d] hover:bg-[#fbbf24] text-black text-sm font-bold rounded transition-colors"
+                  className="px-4 py-1.5 bg-[#4ec9b0] hover:bg-[#3db89f] text-black text-sm font-bold rounded transition-colors"
                 >
                   <Check size={14} className="inline mr-1" />
                   更新
@@ -189,7 +189,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
             ) : (
               <button
                 onClick={handleAddRule}
-                className="px-4 py-1.5 bg-[#fcd34d] hover:bg-[#fbbf24] text-black text-sm font-bold rounded transition-colors mt-5"
+                className="px-4 py-1.5 bg-[#4ec9b0] hover:bg-[#3db89f] text-black text-sm font-bold rounded transition-colors mt-5"
               >
                 <Plus size={14} className="inline mr-1" />
                 添加
@@ -213,7 +213,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
                   key={rule.id}
                   className={`p-3 rounded border ${
                     rule.enabled
-                      ? 'bg-[#1e1e1e] border-[#3e3e42] hover:border-[#fcd34d]/50'
+                      ? 'bg-[#1e1e1e] border-[#3e3e42] hover:border-[#4ec9b0]/50'
                       : 'bg-[#252526] border-[#333] opacity-60'
                   } transition-all group`}
                 >
@@ -226,7 +226,7 @@ export const BreakpointRules: React.FC<BreakpointRulesProps> = ({ onClose }) => 
                         checked={rule.enabled}
                         onChange={() => handleToggleEnabled(rule.id)}
                       />
-                      <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#fcd34d]"></div>
+                      <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4ec9b0]"></div>
                     </label>
 
                     {/* Content */}

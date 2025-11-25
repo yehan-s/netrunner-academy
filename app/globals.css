@@ -1,9 +1,10 @@
+@import './reqable-theme.css';
+
 body {
   margin: 0;
   background-color: #000;
-  color: #cccccc;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  color: var(--reqable-text-primary);
+  font-family: var(--reqable-font-sans);
   height: 100vh;
   overflow: hidden;
 }

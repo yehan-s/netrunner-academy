@@ -93,7 +93,7 @@ export const Composer: React.FC<ComposerProps> = ({
         <button
           data-testid="reqable-composer-send"
           onClick={handleSend}
-          className="h-8 px-6 bg-[#fcd34d] text-black text-xs font-bold rounded hover:bg-[#fbbf24] flex items-center gap-2"
+          className="h-8 px-6 bg-[#4ec9b0] text-black text-xs font-bold rounded hover:bg-[#3db89f] flex items-center gap-2"
         >
           <Send size={14} /> Send
         </button>
@@ -106,7 +106,7 @@ export const Composer: React.FC<ComposerProps> = ({
             <button
               key={t}
               onClick={() => setComposerTab(t.toLowerCase() as ComposerTab)}
-              className={`h-full text-xs border-b-2 px-1 ${composerTab === t.toLowerCase() ? 'text-[#fcd34d] border-[#fcd34d] font-bold' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+              className={`h-full text-xs border-b-2 px-1 ${composerTab === t.toLowerCase() ? 'text-[#4ec9b0] border-[#4ec9b0] font-bold' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
             >
               {t}
             </button>
@@ -124,9 +124,9 @@ export const Composer: React.FC<ComposerProps> = ({
             <div className="flex flex-col h-full">
               <div className="h-8 bg-[#252526] flex items-center px-2 gap-2 border-b border-[#333]">
                 <div className="flex items-center gap-2">
-                  <input type="radio" name="bodyType" id="none" className="accent-[#fcd34d]" /> <label htmlFor="none" className="text-xs text-gray-400">none</label>
-                  <input type="radio" name="bodyType" id="json" defaultChecked className="accent-[#fcd34d]" /> <label htmlFor="json" className="text-xs text-gray-400">json</label>
-                  <input type="radio" name="bodyType" id="form" className="accent-[#fcd34d]" /> <label htmlFor="form" className="text-xs text-gray-400">form-data</label>
+                  <input type="radio" name="bodyType" id="none" className="accent-[#4ec9b0]" /> <label htmlFor="none" className="text-xs text-gray-400">none</label>
+                  <input type="radio" name="bodyType" id="json" defaultChecked className="accent-[#4ec9b0]" /> <label htmlFor="json" className="text-xs text-gray-400">json</label>
+                  <input type="radio" name="bodyType" id="form" className="accent-[#4ec9b0]" /> <label htmlFor="form" className="text-xs text-gray-400">form-data</label>
                 </div>
               </div>
               <textarea

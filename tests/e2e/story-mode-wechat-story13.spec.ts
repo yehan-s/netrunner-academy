@@ -6,6 +6,8 @@ test.describe('Story 13 - 灰度策略回滚', () => {
   test('使用 Reqable Composer 调用 override API 并通关', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
     await expect(page.getByText(/灰度策略回滚/)).toBeVisible();
     await page.getByText(/灰度策略回滚/).click();

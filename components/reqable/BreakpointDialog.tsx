@@ -68,11 +68,11 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
 
   return createPortal(
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4">
-      <div className="bg-[#1e1e1e] border border-[#fcd34d] rounded-lg w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="bg-[#1e1e1e] border border-[#4ec9b0] rounded-lg w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#333] bg-[#252526]">
           <div className="flex items-center gap-3">
-            <AlertTriangle size={24} className="text-[#fcd34d]" />
+            <AlertTriangle size={24} className="text-[#4ec9b0]" />
             <div>
               <h3 className="text-lg font-bold text-white">断点拦截</h3>
               <p className="text-xs text-gray-400">
@@ -82,7 +82,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {hasChanges() && (
-              <span className="text-xs text-[#fcd34d] bg-[#fcd34d]/10 px-2 py-1 rounded border border-[#fcd34d]/30">
+              <span className="text-xs text-[#4ec9b0] bg-[#4ec9b0]/10 px-2 py-1 rounded border border-[#4ec9b0]/30">
                 已修改
               </span>
             )}
@@ -109,7 +109,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
             onClick={() => setActiveTab('request')}
             className={`text-sm px-3 py-1.5 rounded transition-colors ${
               activeTab === 'request'
-                ? 'text-[#fcd34d] bg-[#fcd34d]/10 font-bold'
+                ? 'text-[#4ec9b0] bg-[#4ec9b0]/10 font-bold'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
@@ -119,7 +119,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
             onClick={() => setActiveTab('response')}
             className={`text-sm px-3 py-1.5 rounded transition-colors ${
               activeTab === 'response'
-                ? 'text-[#fcd34d] bg-[#fcd34d]/10 font-bold'
+                ? 'text-[#4ec9b0] bg-[#4ec9b0]/10 font-bold'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
@@ -138,7 +138,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
                   <select
                     value={editedMethod}
                     onChange={(e) => setEditedMethod(e.target.value)}
-                    className="h-10 bg-[#252526] border border-[#333] text-gray-300 text-sm rounded px-3 outline-none focus:border-[#fcd34d] font-bold"
+                    className="h-10 bg-[#252526] border border-[#333] text-gray-300 text-sm rounded px-3 outline-none focus:border-[#4ec9b0] font-bold"
                   >
                     <option>GET</option>
                     <option>POST</option>
@@ -151,7 +151,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
                   <input
                     value={editedUrl}
                     onChange={(e) => setEditedUrl(e.target.value)}
-                    className="flex-1 h-10 bg-[#252526] border border-[#333] text-gray-300 text-sm px-3 rounded outline-none focus:border-[#fcd34d] font-mono"
+                    className="flex-1 h-10 bg-[#252526] border border-[#333] text-gray-300 text-sm px-3 rounded outline-none focus:border-[#4ec9b0] font-mono"
                     placeholder="https://api.example.com/endpoint"
                   />
                 </div>
@@ -171,7 +171,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
                 <textarea
                   value={editedBody}
                   onChange={(e) => setEditedBody(e.target.value)}
-                  className="w-full h-64 bg-[#252526] border border-[#333] text-gray-300 text-sm p-3 rounded outline-none focus:border-[#fcd34d] font-mono resize-none"
+                  className="w-full h-64 bg-[#252526] border border-[#333] text-gray-300 text-sm p-3 rounded outline-none focus:border-[#4ec9b0] font-mono resize-none"
                   placeholder="Request body (JSON, XML, form-data, etc.)"
                 />
                 <div className="flex items-center gap-2 mt-2">
@@ -184,7 +184,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
                         // 不是 JSON，忽略
                       }
                     }}
-                    className="text-xs text-gray-400 hover:text-[#fcd34d] transition-colors"
+                    className="text-xs text-gray-400 hover:text-[#4ec9b0] transition-colors"
                   >
                     美化 JSON
                   </button>
@@ -238,7 +238,7 @@ export const BreakpointDialog: React.FC<BreakpointDialogProps> = ({
               disabled={!hasChanges()}
               className={`h-9 px-4 text-sm font-bold rounded transition-colors flex items-center gap-2 ${
                 hasChanges()
-                  ? 'bg-[#fcd34d] text-black hover:bg-[#fbbf24]'
+                  ? 'bg-[#4ec9b0] text-black hover:bg-[#3db89f]'
                   : 'bg-[#333] text-gray-600 cursor-not-allowed'
               }`}
             >

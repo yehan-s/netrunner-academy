@@ -7,8 +7,12 @@ test.describe('WeChat 剧情模式 - 剧情 3 与 Story 关卡联动', () => {
   test('完成登录故障与价格篡改后，才能触发 story_03_sql_injection 并通关', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     // 1. 打开 WeChat 剧情模式，进入“线上事故处理群”
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
+    await page.waitForTimeout(500);
+    
     await page
       .getByText('周五晚高峰 · 微信投放引发的连锁事故')
       .first()
@@ -26,7 +30,10 @@ test.describe('WeChat 剧情模式 - 剧情 3 与 Story 关卡联动', () => {
     });
     for (let i = 0; i < 10; i++) {
       if (await story01Button.isVisible()) break;
-      await page.getByRole('button', { name: '下一条消息' }).click();
+      const nextBtn = page.getByRole('button', { name: '下一条消息' });
+      if (!(await nextBtn.isVisible())) break;
+      await nextBtn.click();
+      await page.waitForTimeout(1200);
     }
     await expect(story01Button).toBeVisible();
     await story01Button.click();
@@ -49,7 +56,7 @@ test.describe('WeChat 剧情模式 - 剧情 3 与 Story 关卡联动', () => {
 
     // 3. 再完成 story_02_price_tampering
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-
+    await page.waitForTimeout(500); // 等待模式切换
     // 在同一浏览器会话中第二次进入 WeChat 时，剧情卡片仍然可见，但为了避免测试偶发找不到元素，这里直接进入群聊会话
     await page
       .getByText('线上事故处理群 (34)', { exact: true })
@@ -60,7 +67,10 @@ test.describe('WeChat 剧情模式 - 剧情 3 与 Story 关卡联动', () => {
     });
     for (let i = 0; i < 10; i++) {
       if (await story02Button.isVisible()) break;
-      await page.getByRole('button', { name: '下一条消息' }).click();
+      const nextBtn = page.getByRole('button', { name: '下一条消息' });
+      if (!(await nextBtn.isVisible())) break;
+      await nextBtn.click();
+      await page.waitForTimeout(1200);
     }
     await expect(story02Button).toBeVisible();
     await story02Button.click();
@@ -83,7 +93,7 @@ test.describe('WeChat 剧情模式 - 剧情 3 与 Story 关卡联动', () => {
 
     // 4. 返回 WeChat，推进到 story_03_sql_injection 任务消息
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-
+    await page.waitForTimeout(500); // 等待模式切换
     // 直接回到上次的群聊视图，无需重新点击剧情卡片
     await page
       .getByText('线上事故处理群 (34)', { exact: true })
@@ -94,7 +104,10 @@ test.describe('WeChat 剧情模式 - 剧情 3 与 Story 关卡联动', () => {
     });
     for (let i = 0; i < 10; i++) {
       if (await story03Button.isVisible()) break;
-      await page.getByRole('button', { name: '下一条消息' }).click();
+      const nextBtn = page.getByRole('button', { name: '下一条消息' });
+      if (!(await nextBtn.isVisible())) break;
+      await nextBtn.click();
+      await page.waitForTimeout(1200);
     }
     await expect(story03Button).toBeVisible();
 

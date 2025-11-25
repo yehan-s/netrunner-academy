@@ -11,8 +11,12 @@ test.describe('WeChat 剧情模式 - 剧情 2 与 Story 关卡联动', () => {
   test('从微信群聊触发 story_02_price_tampering 并完成会员价格篡改任务', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
+    // 等待 React hydration 完成
+    await page.waitForTimeout(3000);
     // 1. 打开 WeChat 剧情模式，选中“周五晚高峰”故事线并进入群聊
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
+    await page.waitForTimeout(500);
+    
     await page
       .getByText('周五晚高峰 · 微信投放引发的连锁事故')
       .first()
@@ -31,7 +35,10 @@ test.describe('WeChat 剧情模式 - 剧情 2 与 Story 关卡联动', () => {
 
     for (let i = 0; i < 10; i++) {
       if (await story01Button.isVisible()) break;
-      await page.getByRole('button', { name: '下一条消息' }).click();
+      const nextBtn = page.getByRole('button', { name: '下一条消息' });
+      if (!(await nextBtn.isVisible())) break;
+      await nextBtn.click();
+      await page.waitForTimeout(1200);
     }
     await expect(story01Button).toBeVisible();
 
@@ -63,7 +70,7 @@ test.describe('WeChat 剧情模式 - 剧情 2 与 Story 关卡联动', () => {
 
     // 4. 返回 WeChat，推进到 story_02_price_tampering 任务消息
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-
+    await page.waitForTimeout(500); // 等待模式切换
     // 剧情已经处于进行中，左侧列表中默认存在群聊会话，直接点击会话进入即可
     await page
       .getByText('线上事故处理群 (34)', { exact: true })
@@ -75,7 +82,10 @@ test.describe('WeChat 剧情模式 - 剧情 2 与 Story 关卡联动', () => {
 
     for (let i = 0; i < 10; i++) {
       if (await story02Button.isVisible()) break;
-      await page.getByRole('button', { name: '下一条消息' }).click();
+      const nextBtn = page.getByRole('button', { name: '下一条消息' });
+      if (!(await nextBtn.isVisible())) break;
+      await nextBtn.click();
+      await page.waitForTimeout(1200);
     }
     await expect(story02Button).toBeVisible();
 
@@ -107,7 +117,7 @@ test.describe('WeChat 剧情模式 - 剧情 2 与 Story 关卡联动', () => {
     await page.getByRole('button', { name: 'Next Level' }).click();
 
     await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-    // 回到微信后，如果剧情仍在同一群聊视图，则无需再点击剧情卡片
+    await page.waitForTimeout(500); // 等待模式切换    // 回到微信后，如果剧情仍在同一群聊视图，则无需再点击剧情卡片
     await expect(
       page.getByRole('button', { name: '下一条消息' }),
     ).toBeVisible();

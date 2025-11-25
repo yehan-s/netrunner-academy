@@ -2,6 +2,29 @@ import React from 'react';
 import { Rocket, Lock, FileText, Play, Trash2 } from 'lucide-react';
 import { NetworkRequest } from '../../types';
 
+// URL 高亮显示组件
+const HighlightedUrl: React.FC<{ url: string; isSelected: boolean }> = ({ url, isSelected }) => {
+  try {
+    const urlObj = new URL(url);
+    const host = urlObj.host;
+    const path = urlObj.pathname + urlObj.search;
+    
+    if (isSelected) {
+      return <span className="text-white">{url}</span>;
+    }
+    
+    return (
+      <>
+        <span className="text-[#4ec9b0]">{urlObj.protocol}//</span>
+        <span className="text-[#4ec9b0]">{host}</span>
+        <span className="text-[#cccccc]">{path}</span>
+      </>
+    );
+  } catch {
+    return <span className={isSelected ? 'text-white' : 'text-[#cccccc]'}>{url}</span>;
+  }
+};
+
 export interface TrafficListProps {
   filteredRequests: NetworkRequest[];
   selectedRequestId: string | null;
@@ -32,13 +55,13 @@ export const TrafficList: React.FC<TrafficListProps> = ({
   return (
     <>
       {/* Header Row */}
-      <div className="h-7 bg-[#252526] border-b border-[#111] flex items-center text-[11px] text-[#888] px-2 font-medium select-none">
-        <div className="w-12 text-center border-r border-[#333]/50">ID</div>
-        <div className="w-8 text-center border-r border-[#333]/50">Icon</div>
-        <div className="w-16 pl-2 border-r border-[#333]/50">Method</div>
-        <div className="flex-1 pl-2 border-r border-[#333]/50">URL</div>
-        <div className="w-16 text-center border-r border-[#333]/50">Status</div>
-        <div className="w-16 text-center border-r border-[#333]/50">Size</div>
+      <div className="h-7 bg-[#252526] border-b border-[#3c3c3c] flex items-center text-[11px] text-[#858585] px-2 font-medium select-none">
+        <div className="w-12 text-center border-r border-[#3c3c3c]/50">ID</div>
+        <div className="w-8 text-center border-r border-[#3c3c3c]/50">Icon</div>
+        <div className="w-16 pl-2 border-r border-[#3c3c3c]/50">Method</div>
+        <div className="flex-1 pl-2 border-r border-[#3c3c3c]/50">URL</div>
+        <div className="w-16 text-center border-r border-[#3c3c3c]/50">Status</div>
+        <div className="w-16 text-center border-r border-[#3c3c3c]/50">Size</div>
         <div className="w-16 text-center">Time</div>
       </div>
 
@@ -55,9 +78,9 @@ export const TrafficList: React.FC<TrafficListProps> = ({
             const isPaused = req.isPaused;
             const highlightColor = getHighlightColor?.(req);
 
-            // Priority: Selected > Paused > Highlight > Default
+            // Priority: Selected > Paused > Highlight > Default (Reqable 风格)
             const bgColor = isSelected
-              ? 'bg-[#264f78]'
+              ? 'bg-[#37373d] border-l-2 border-l-[#4ec9b0]'
               : isPaused
               ? 'bg-[#3a1d1d]'
               : highlightColor
@@ -72,7 +95,7 @@ export const TrafficList: React.FC<TrafficListProps> = ({
                   e.preventDefault();
                   onContextMenu(e, req.id);
                 }}
-                className={`h-[26px] flex items-center text-[12px] border-b border-[#282828] cursor-pointer font-mono group ${bgColor} ${isSelected ? 'text-white' : 'text-[#cccccc]'}`}
+                className={`h-[26px] flex items-center text-[12px] border-b border-[#3c3c3c]/30 cursor-pointer font-mono group ${bgColor} ${isSelected ? 'text-white' : 'text-[#cccccc]'}`}
                 style={highlightColor && !isSelected && !isPaused ? { backgroundColor: highlightColor } : undefined}
               >
                 <div className="w-12 text-center text-[10px] opacity-70 flex items-center justify-center gap-1">
@@ -88,8 +111,8 @@ export const TrafficList: React.FC<TrafficListProps> = ({
                   {req.method}
                 </div>
 
-                <div className="flex-1 pl-2 truncate opacity-90 pr-2" title={req.url}>
-                  {req.url}
+                <div className="flex-1 pl-2 truncate pr-2" title={req.url}>
+                  <HighlightedUrl url={req.url} isSelected={isSelected} />
                 </div>
 
                 <div className="w-16 text-center text-[11px]" style={{ color: isSelected ? 'white' : getStatusColor(req.status || 0) }}>
