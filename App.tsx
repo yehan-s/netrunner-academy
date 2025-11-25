@@ -38,6 +38,8 @@ import { getThrottleConfig, calculateThrottledTime, shouldDropPacket } from './c
 import { checkAccessControl } from './components/reqable/AccessControl';
 import { getTurboModeConfig, shouldBlockResource } from './components/reqable/TurboMode';
 import { matchReverseProxyRule, applyReverseProxy } from './components/reqable/ReverseProxy';
+import { getProxyConfig } from './components/reqable/ProxyTerminal';
+import { isCertInstalled } from './components/reqable/SSLCertDialog';
 
 type ActiveApp = 'browser' | 'reqable' | 'split' | 'docs' | 'wechat';
 
@@ -373,7 +375,35 @@ export default function App() {
       };
     }
 
-    // 4. Check Throttle packet loss
+    // 4. Apply Proxy Config and SSL Cert status
+    const proxyConfig = getProxyConfig();
+    const certInstalled = isCertInstalled();
+    const isHttps = processedReq.url.startsWith('https://');
+    
+    // Add proxy info to request headers
+    if (proxyConfig.enabled) {
+      processedReq = {
+        ...processedReq,
+        requestHeaders: {
+          ...processedReq.requestHeaders,
+          'x-proxy-server': `${proxyConfig.host}:${proxyConfig.port}`,
+          'x-proxy-protocol': proxyConfig.protocol,
+        }
+      };
+    }
+    
+    // Check SSL cert for HTTPS requests
+    if (isHttps && !certInstalled) {
+      processedReq = {
+        ...processedReq,
+        requestHeaders: {
+          ...processedReq.requestHeaders,
+          'x-ssl-warning': 'Certificate not installed - HTTPS decryption may fail',
+        }
+      };
+    }
+
+    // 5. Check Throttle packet loss
     const throttleConfig = getThrottleConfig();
     if (throttleConfig.enabled && shouldDropPacket(throttleConfig)) {
       const droppedResponse: NetworkRequest = {

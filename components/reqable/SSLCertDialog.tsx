@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Download, Shield, AlertCircle, CheckCircle, Smartphone, Monitor } from 'lucide-react';
+import { X, Download, Shield, AlertCircle, CheckCircle, Smartphone, Monitor, RefreshCw, Copy, Check } from 'lucide-react';
 
 export interface SSLCertDialogProps {
   onClose: () => void;
@@ -8,23 +8,131 @@ export interface SSLCertDialogProps {
 
 type Platform = 'macos' | 'windows' | 'ios' | 'android';
 
+const STORAGE_KEY = 'netrunner_ssl_cert_state';
+
+interface CertState {
+  installed: boolean;
+  installedAt: string | null;
+  fingerprint: string;
+  validFrom: string;
+  validTo: string;
+  serialNumber: string;
+}
+
+// Generate a random hex string
+const generateHex = (length: number): string => {
+  return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16).toUpperCase()).join('');
+};
+
+// Generate certificate info
+const generateCertInfo = (): Omit<CertState, 'installed' | 'installedAt'> => {
+  const now = new Date();
+  const validFrom = now.toISOString().split('T')[0];
+  const validToDate = new Date(now);
+  validToDate.setFullYear(validToDate.getFullYear() + 1);
+  const validTo = validToDate.toISOString().split('T')[0];
+  
+  return {
+    fingerprint: `${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}:${generateHex(2)}`,
+    validFrom,
+    validTo,
+    serialNumber: generateHex(16),
+  };
+};
+
+// Load cert state from localStorage
+const loadCertState = (): CertState => {
+  if (typeof window === 'undefined') {
+    return { installed: false, installedAt: null, ...generateCertInfo() };
+  }
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {}
+  const newState = { installed: false, installedAt: null, ...generateCertInfo() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+  return newState;
+};
+
+// Save cert state
+const saveCertState = (state: CertState) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+};
+
+// Export function to check if cert is installed
+export const isCertInstalled = (): boolean => {
+  return loadCertState().installed;
+};
+
+// Export function to get cert info
+export const getCertInfo = (): CertState => {
+  return loadCertState();
+};
+
 export const SSLCertDialog: React.FC<SSLCertDialogProps> = ({ onClose }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('macos');
+  const [certState, setCertState] = useState<CertState>(loadCertState);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setCertState(loadCertState());
+  }, []);
+
+  const handleInstallCert = () => {
+    const newState: CertState = {
+      ...certState,
+      installed: true,
+      installedAt: new Date().toISOString(),
+    };
+    setCertState(newState);
+    saveCertState(newState);
+  };
+
+  const handleUninstallCert = () => {
+    const newState: CertState = {
+      ...certState,
+      installed: false,
+      installedAt: null,
+    };
+    setCertState(newState);
+    saveCertState(newState);
+  };
+
+  const handleRegenerateCert = () => {
+    const newState: CertState = {
+      installed: false,
+      installedAt: null,
+      ...generateCertInfo(),
+    };
+    setCertState(newState);
+    saveCertState(newState);
+  };
+
+  const handleCopyFingerprint = () => {
+    navigator.clipboard.writeText(certState.fingerprint);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleDownloadCert = () => {
-    // 模拟证书下载
     const certContent = `-----BEGIN CERTIFICATE-----
 MIIDXTCCAkWgAwIBAgIJAKL0UG+mRKqzMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
-BAYTAkNOMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
-aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
-... (Reqable Root CA Certificate)
+BAYTAkNOMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhOZXRSdW5uZXIg
+QWNhZGVteTAeFw0yNTAxMDEwMDAwMDBaFw0yNjAxMDEwMDAwMDBaMEUxCzAJBgNV
+BAYTAkNOMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhOZXRSdW5uZXIg
+QWNhZGVteTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK7E8J5X+Y2Z
+Serial: ${certState.serialNumber}
+Fingerprint: ${certState.fingerprint}
 -----END CERTIFICATE-----`;
 
     const blob = new Blob([certContent], { type: 'application/x-x509-ca-cert' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'Reqable-Root-CA.crt';
+    a.download = 'NetRunner-Root-CA.crt';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -281,6 +389,59 @@ aWRnaXRzIFB0eSBMdGQwHhcNMjMwMTAxMDAwMDAwWhcNMjQwMTAxMDAwMDAwWjBF
               {label}
             </button>
           ))}
+        </div>
+
+        {/* Certificate Info Panel */}
+        <div className="px-6 py-3 bg-[#252526] border-b border-[#333]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${certState.installed ? 'bg-green-400' : 'bg-gray-500'}`} />
+              <span className="text-sm font-medium text-white">
+                证书状态: {certState.installed ? '已安装' : '未安装'}
+              </span>
+              {certState.installed && certState.installedAt && (
+                <span className="text-xs text-gray-500">
+                  ({new Date(certState.installedAt).toLocaleDateString()})
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {certState.installed ? (
+                <button
+                  onClick={handleUninstallCert}
+                  className="px-3 py-1 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30"
+                >
+                  移除证书
+                </button>
+              ) : (
+                <button
+                  onClick={handleInstallCert}
+                  className="px-3 py-1 text-xs bg-green-600/20 text-green-400 rounded hover:bg-green-600/30"
+                >
+                  标记已安装
+                </button>
+              )}
+              <button
+                onClick={handleRegenerateCert}
+                className="p-1 text-gray-400 hover:text-white rounded hover:bg-[#37373d]"
+                title="重新生成证书"
+              >
+                <RefreshCw size={14} />
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">指纹:</span>
+              <code className="text-gray-300 font-mono truncate max-w-[200px]">{certState.fingerprint}</code>
+              <button onClick={handleCopyFingerprint} className="text-gray-400 hover:text-white">
+                {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+              </button>
+            </div>
+            <div><span className="text-gray-500">序列号:</span> <code className="text-gray-300 font-mono">{certState.serialNumber}</code></div>
+            <div><span className="text-gray-500">有效期:</span> <span className="text-gray-300">{certState.validFrom} ~ {certState.validTo}</span></div>
+            <div><span className="text-gray-500">颁发者:</span> <span className="text-gray-300">NetRunner Academy CA</span></div>
+          </div>
         </div>
 
         {/* Content */}

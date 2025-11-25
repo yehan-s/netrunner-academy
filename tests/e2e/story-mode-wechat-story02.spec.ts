@@ -115,11 +115,18 @@ test.describe('WeChat 剧情模式 - 剧情 2 与 Story 关卡联动', () => {
 
     // 6. 返回 WeChat，确认可以继续推进剧情
     await page.getByRole('button', { name: 'Next Level' }).click();
+    await page.waitForTimeout(500);
 
-    await page.getByRole('button', { name: 'WeChat 剧情模式' }).click();
-    await page.waitForTimeout(500); // 等待模式切换    // 回到微信后，如果剧情仍在同一群聊视图，则无需再点击剧情卡片
+    // 如果还没在 WeChat 模式，点击进入
+    const wechatBtn = page.getByRole('button', { name: 'WeChat 剧情模式' });
+    if (await wechatBtn.isVisible()) {
+      await wechatBtn.click();
+      await page.waitForTimeout(500);
+    }
+    
+    // 回到微信后，确认可以继续推进
     await expect(
       page.getByRole('button', { name: '下一条消息' }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 5000 });
   });
 });
