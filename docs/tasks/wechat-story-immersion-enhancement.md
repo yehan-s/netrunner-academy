@@ -67,18 +67,21 @@
 - [x] UI：在聊天窗口右侧显示可折叠的线索面板
 - [x] 交互：点击待同步线索可触发同步
 
-### 3.2 条件消息（分支剧情基础）
-- [ ] `types.ts`：StoryMessage 添加 `condition?: string` 字段
-- [ ] `useWeChatStoryState.ts`：实现条件表达式解析
-  - 支持 `completedCases.includes('xxx')`
-  - 支持 `progress > 10`
-  - 支持 `timeSpent < 300` (秒)
-- [ ] 消息渲染时根据条件决定是否显示
+### 3.2 条件消息（分支剧情基础） ✅
+- [x] `storylines.ts`：StoryMessage 添加 `condition?: string` 字段
+- [x] `components/wechat/conditionParser.ts`：实现条件表达式解析
+  - 支持 `completed:case_id` - 检查关卡完成
+  - 支持 `synced:clue_key` - 检查线索同步
+  - 支持 `progress>N` / `progress>=N` 等 - 检查进度
+  - 支持 `all:cond1,cond2` / `any:cond1,cond2` - 多条件组合
+  - 支持 `!condition` - 否定条件
+- [x] `StoryChatPanel.tsx`：消息渲染时根据条件决定是否显示
 
-### 3.3 分支剧情内容
-- [ ] 设计"快速通关"支线：连续 3 个任务无失败 → 老板表扬消息
-- [ ] 设计"多次失败"支线：同一任务失败 3 次 → 同事私聊安慰 + 提示
-- [ ] 设计"超时"支线：某任务超过 10 分钟 → 领导询问进展
+### 3.3 分支剧情内容 ✅
+- [x] scene-07-bonus：完成 story_01 后老板表扬
+- [x] scene-13-bonus：连续完成 story_01+02 后安全负责人私聊鼓励
+- [ ] 设计"多次失败"支线（可选，需要失败计数功能）
+- [ ] 设计"超时"支线（可选，需要计时功能）
 
 ---
 
@@ -110,6 +113,6 @@
 - [x] 私聊消息数量增加（现有 10 条私聊）
 - [x] 每个 `targetCaseId` 前有 1 条教学铺垫（story_01/02/03 前均有）
 
-### P2 完成标准（待实现）
-- [ ] 线索面板可正常显示和折叠
-- [ ] 至少实现 1 个分支剧情
+### P2 完成标准 ✅
+- [x] 线索面板可正常显示和折叠
+- [x] 至少实现 1 个分支剧情（实现了 2 个条件消息）

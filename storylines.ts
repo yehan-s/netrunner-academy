@@ -8,6 +8,7 @@ export interface StoryMessage {
   targetCaseId?: string;
   requiresClueSync?: boolean;
   clueKey?: string;
+  condition?: string;           // 条件表达式，如 "completed:story_01" 或 "progress>5"
 }
 
 export interface StoryThread {
@@ -91,6 +92,14 @@ export const INCIDENT_STORY_THREAD: StoryThread = {
       targetCaseId: 'story_01_login_outage',
     },
     {
+      id: 'scene-07-bonus',
+      sender: '老板',
+      channel: 'WeChat',
+      text: '【群聊】@你 处理速度很快！继续保持，有问题随时找我协调资源。',
+      timestamp: '19:16',
+      condition: 'completed:story_01_login_outage',
+    },
+    {
       id: 'scene-08',
       sender: '同事',
       channel: 'WeChat',
@@ -147,6 +156,14 @@ export const INCIDENT_STORY_THREAD: StoryThread = {
       channel: 'WeChat',
       text: '【群聊】那这几笔“0.01 元买会员”的订单我们先标记为可疑，后续统一处理。你这边帮忙再多测几笔，确保问题路径搞清楚。',
       timestamp: '19:35',
+    },
+    {
+      id: 'scene-13-bonus',
+      sender: '安全负责人',
+      channel: 'WeChat',
+      text: '【私聊】两个问题都处理得很漂亮，复盘的时候我会重点表扬你的表现 👍',
+      timestamp: '19:36',
+      condition: 'all:completed:story_01_login_outage,completed:story_02_price_tampering',
     },
     {
       id: 'scene-13a',

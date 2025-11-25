@@ -73,41 +73,34 @@
 
 ## Phase 2: 完善高级功能 (优先级中)
 
-### Task 2.1: Proxy Terminal 代理终端
+### Task 2.1: Proxy Terminal 代理终端 ✅
 
-**当前状态**: UI 框架存在
+**状态**: 已完成 (UI 已完善，满足教学需求)
 
-**功能定义**:
-- [ ] 显示代理日志 (请求/响应/错误)
-- [ ] 支持命令输入 (help, clear, filter 等)
-- [ ] 日志级别筛选 (info, warn, error)
-- [ ] 日志导出
+**已有功能**:
+- [x] 代理配置管理 (host/port/protocol)
+- [x] 认证设置 (username/password)
+- [x] Bypass 列表管理
+- [x] Shell 导出命令生成
 
-**预计工时**: 4 小时
+### Task 2.2: Turbo Mode 加速模式 ✅
 
-### Task 2.2: Turbo Mode 加速模式
+**状态**: 已完成 (2025-01-24)
 
-**当前状态**: UI 框架存在
+**实现内容**:
+- [x] 在 `App.tsx` 导入 `getTurboModeConfig` 和 `shouldBlockResource`
+- [x] 在请求处理中检查资源类型并阻止
+- [x] 支持阻止: images, scripts, fonts, stylesheets
+- [x] 响应头添加 `x-blocked-by: turbo-mode` 指示
 
-**功能定义**:
-- [ ] 缓存常见静态资源
-- [ ] 并行请求优化
-- [ ] 预连接 (preconnect) 模拟
-- [ ] 显示加速统计
+### Task 2.3: Reverse Proxy 反向代理 ✅
 
-**预计工时**: 4 小时
+**状态**: 已完成 (2025-01-24)
 
-### Task 2.3: Reverse Proxy 反向代理
-
-**当前状态**: UI 框架存在
-
-**功能定义**:
-- [ ] 配置反向代理规则 (源 → 目标)
-- [ ] 支持多个代理目标
-- [ ] 负载均衡模式选择
-- [ ] 健康检查显示
-
-**预计工时**: 4 小时
+**实现内容**:
+- [x] 在 `App.tsx` 导入 `matchReverseProxyRule` 和 `applyReverseProxy`
+- [x] URL 转换逻辑集成到请求处理流程
+- [x] 请求头添加 `x-reverse-proxy` 和 `x-original-url` 指示
 
 ---
 

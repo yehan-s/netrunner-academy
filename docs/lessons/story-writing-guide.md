@@ -273,7 +273,47 @@ fs.writeFileSync('storylines.ts', content);
 
 ---
 
-## 八、检查清单
+## 八、条件消息
+
+### 条件表达式语法
+
+在 `condition` 字段中使用表达式控制消息显示：
+
+| 表达式 | 说明 | 示例 |
+|--------|------|------|
+| `completed:case_id` | 检查关卡是否完成 | `completed:story_01_login_outage` |
+| `!completed:case_id` | 检查关卡未完成 | `!completed:story_01` |
+| `synced:clue_key` | 检查线索是否已同步 | `synced:scene-07` |
+| `progress>N` | 检查进度大于 N | `progress>5` |
+| `progress>=N` | 检查进度大于等于 N | `progress>=10` |
+| `all:cond1,cond2` | 所有条件都满足 | `all:completed:story_01,completed:story_02` |
+| `any:cond1,cond2` | 任一条件满足 | `any:completed:story_01,synced:clue-01` |
+
+### 使用示例
+
+```typescript
+// 完成 story_01 后显示老板表扬
+{
+  id: 'scene-07-bonus',
+  sender: '老板',
+  text: '【群聊】@你 处理速度很快！继续保持。',
+  timestamp: '19:16',
+  condition: 'completed:story_01_login_outage',
+}
+
+// 同时完成 story_01 和 story_02 后显示
+{
+  id: 'scene-13-bonus',
+  sender: '安全负责人',
+  text: '【私聊】两个问题都处理得很漂亮 👍',
+  timestamp: '19:36',
+  condition: 'all:completed:story_01_login_outage,completed:story_02_price_tampering',
+}
+```
+
+---
+
+## 九、检查清单
 
 ### 发布前检查
 

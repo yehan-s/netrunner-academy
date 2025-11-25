@@ -4,6 +4,7 @@ import { StoryThread, StoryMessage } from '../../storylines';
 import { ChatSession, cleanStoryText, CURRENT_USER } from './useWeChatStoryState';
 import { TypingIndicator } from './TypingIndicator';
 import { ClueBoard, ClueItem } from './ClueBoard';
+import { evaluateCondition, ConditionContext } from './conditionParser';
 
 // 角色头像颜色映射
 const SENDER_AVATAR_COLORS: Record<string, string> = {
@@ -96,6 +97,13 @@ export const StoryChatPanel: React.FC<StoryChatPanelProps> = ({
       });
   }, [activeThread, clueSyncList]);
 
+  // 条件消息上下文
+  const conditionContext = useMemo<ConditionContext>(() => ({
+    completedCases,
+    clueSyncList,
+    progress: activeSession?.messages.length || 0,
+  }), [completedCases, clueSyncList, activeSession?.messages.length]);
+
   // 线索面板显示状态
   const [showClueBoard, setShowClueBoard] = useState(true);
 
@@ -143,7 +151,14 @@ export const StoryChatPanel: React.FC<StoryChatPanelProps> = ({
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         {activeSession.messages
-          .filter((msg) => !(typingState?.isTyping && msg.id === activeSession.messages[activeSession.messages.length - 1]?.id && msg.sender !== CURRENT_USER))
+          .filter((msg) => {
+            // 过滤 typing 状态的消息
+            if (typingState?.isTyping && msg.id === activeSession.messages[activeSession.messages.length - 1]?.id && msg.sender !== CURRENT_USER) {
+              return false;
+            }
+            // 评估条件表达式
+            return evaluateCondition(msg.condition, conditionContext);
+          })
           .map((msg, index) => {
           const isMe = msg.sender === CURRENT_USER;
           const displayText = cleanStoryText(msg.text);

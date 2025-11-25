@@ -36,6 +36,8 @@ import { loadRequestHistory, saveRequestHistory, clearRequestHistory } from './u
 import { applyScriptRules, addScriptLog } from './utils/scriptEngine';
 import { getThrottleConfig, calculateThrottledTime, shouldDropPacket } from './components/reqable/NetworkThrottle';
 import { checkAccessControl } from './components/reqable/AccessControl';
+import { getTurboModeConfig, shouldBlockResource } from './components/reqable/TurboMode';
+import { matchReverseProxyRule, applyReverseProxy } from './components/reqable/ReverseProxy';
 
 type ActiveApp = 'browser' | 'reqable' | 'split' | 'docs' | 'wechat';
 
@@ -340,11 +342,42 @@ export default function App() {
       return;
     }
 
-    // 2. Check Throttle packet loss
+    // 2. Check Turbo Mode resource blocking
+    const turboConfig = getTurboModeConfig();
+    if (turboConfig.enabled && shouldBlockResource(req.type || '', turboConfig)) {
+      const blockedResponse: NetworkRequest = {
+        ...req,
+        status: 0,
+        statusText: 'Blocked by Turbo Mode',
+        responseHeaders: { 'x-blocked-by': 'turbo-mode', 'x-resource-type': req.type || 'unknown' },
+        responseBody: '',
+        time: 0,
+      };
+      setRequests(prev => prev.map(r => r.id === req.id ? blockedResponse : r));
+      return;
+    }
+
+    // 3. Apply Reverse Proxy rules (URL transformation)
+    let processedReq = req;
+    const reverseProxyRule = matchReverseProxyRule(req.url);
+    if (reverseProxyRule) {
+      const newUrl = applyReverseProxy(req.url, reverseProxyRule);
+      processedReq = {
+        ...req,
+        url: newUrl,
+        requestHeaders: {
+          ...req.requestHeaders,
+          'x-reverse-proxy': reverseProxyRule.name,
+          'x-original-url': req.url,
+        }
+      };
+    }
+
+    // 4. Check Throttle packet loss
     const throttleConfig = getThrottleConfig();
     if (throttleConfig.enabled && shouldDropPacket(throttleConfig)) {
       const droppedResponse: NetworkRequest = {
-        ...req,
+        ...processedReq,
         status: 0,
         statusText: 'Packet Lost (Throttle)',
         responseHeaders: { 'x-throttle': 'packet-loss' },
@@ -359,7 +392,7 @@ export default function App() {
 
     const { response, shouldTriggerSuccess } = buildBackendResponse(
       activeCaseId,
-      req,
+      processedReq,
       activeRules,
     );
 
