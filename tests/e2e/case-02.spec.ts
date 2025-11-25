@@ -12,8 +12,14 @@ test.describe('case_02 - 逻辑漏洞：价格篡改', () => {
     // 在列表中选择“逻辑漏洞：价格篡改”
     await page.getByText('逻辑漏洞：价格篡改').click();
 
+    // 等待 Reqable 面板加载
+    await page.waitForTimeout(1000);
+
     // 切换到 Reqable Composer 视图
     await page.getByTestId('reqable-tab-composer').click();
+    
+    // 等待 Composer 渲染
+    await page.waitForSelector('[data-testid="reqable-composer-method"]', { timeout: 5000 });
 
     // 设置为 POST 方法
     await page

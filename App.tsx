@@ -34,6 +34,8 @@ import { shouldBlockRequest } from './components/reqable/GatewayRules';
 import { applyMirrorRule } from './components/reqable/MirrorRules';
 import { loadRequestHistory, saveRequestHistory, clearRequestHistory } from './utils/historyManager';
 import { applyScriptRules, addScriptLog } from './utils/scriptEngine';
+import { getThrottleConfig, calculateThrottledTime, shouldDropPacket } from './components/reqable/NetworkThrottle';
+import { checkAccessControl } from './components/reqable/AccessControl';
 
 type ActiveApp = 'browser' | 'reqable' | 'split' | 'docs' | 'wechat';
 
@@ -323,6 +325,38 @@ export default function App() {
   const processBackendLogic = (req: NetworkRequest) => {
     if (req.status !== 0 && req.status !== undefined) return;
 
+    // 1. Check Access Control rules
+    const accessResult = checkAccessControl(req.url);
+    if (!accessResult.allowed) {
+      const blockedResponse: NetworkRequest = {
+        ...req,
+        status: 403,
+        statusText: 'Blocked by Access Control',
+        responseHeaders: { 'x-blocked-by': 'access-control', 'x-rule': accessResult.rule?.name || 'unknown' },
+        responseBody: JSON.stringify({ error: 'Access denied', rule: accessResult.rule?.name }),
+        time: 0,
+      };
+      setRequests(prev => prev.map(r => r.id === req.id ? blockedResponse : r));
+      return;
+    }
+
+    // 2. Check Throttle packet loss
+    const throttleConfig = getThrottleConfig();
+    if (throttleConfig.enabled && shouldDropPacket(throttleConfig)) {
+      const droppedResponse: NetworkRequest = {
+        ...req,
+        status: 0,
+        statusText: 'Packet Lost (Throttle)',
+        responseHeaders: { 'x-throttle': 'packet-loss' },
+        responseBody: '',
+        time: throttleConfig.latency,
+      };
+      setTimeout(() => {
+        setRequests(prev => prev.map(r => r.id === req.id ? droppedResponse : r));
+      }, throttleConfig.latency);
+      return;
+    }
+
     const { response, shouldTriggerSuccess } = buildBackendResponse(
       activeCaseId,
       req,
@@ -344,11 +378,27 @@ export default function App() {
       };
     }
 
+    // 3. Calculate throttled delay
+    const baseDelay = 100;
+    const responseSize = finalResponse.responseBody?.length || 0;
+    const throttledDelay = throttleConfig.enabled 
+      ? calculateThrottledTime(baseDelay, responseSize, throttleConfig)
+      : baseDelay;
+
     setTimeout(() => {
       // Apply script rules (response phase)
       const scriptedResponse = applyScriptRules(finalResponse, 'response', addScriptLog);
-      setRequests(prev => prev.map(r => r.id === req.id ? scriptedResponse : r));
-    }, 100);
+      // Add throttle indicator to response if throttled
+      const finalWithThrottle = throttleConfig.enabled ? {
+        ...scriptedResponse,
+        time: throttledDelay,
+        responseHeaders: {
+          ...scriptedResponse.responseHeaders,
+          'x-throttle-profile': throttleConfig.name,
+        }
+      } : scriptedResponse;
+      setRequests(prev => prev.map(r => r.id === req.id ? finalWithThrottle : r));
+    }, throttledDelay);
 
     if (shouldTriggerSuccess) {
       if (activeCaseId === 'story_incident_gray_release') {

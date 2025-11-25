@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { MessageCircle, FolderGit2, Settings, MoreHorizontal, FileText } from 'lucide-react';
 import { StoryThread, StoryMessage } from '../../storylines';
 import { ChatSession, cleanStoryText, CURRENT_USER } from './useWeChatStoryState';
 import { TypingIndicator } from './TypingIndicator';
+import { ClueBoard, ClueItem } from './ClueBoard';
 
 // 角色头像颜色映射
 const SENDER_AVATAR_COLORS: Record<string, string> = {
@@ -76,6 +77,28 @@ export const StoryChatPanel: React.FC<StoryChatPanelProps> = ({
     prevMessageCountRef.current = currentCount;
   }, [activeSession?.messages.length, activeSession?.id]);
 
+  // 生成线索数据
+  const clueItems = useMemo<ClueItem[]>(() => {
+    if (!activeThread) return [];
+    
+    return activeThread.messages
+      .filter((msg) => msg.requiresClueSync && msg.targetCaseId)
+      .map((msg) => {
+        const clueKey = msg.clueKey || msg.id;
+        return {
+          id: clueKey,
+          title: msg.targetCaseId?.replace('story_', '').replace(/_/g, ' ') || '未知任务',
+          timestamp: msg.timestamp || '',
+          caseId: msg.targetCaseId!,
+          summary: cleanStoryText(msg.text).slice(0, 50) + '...',
+          synced: clueSyncList.includes(clueKey),
+        };
+      });
+  }, [activeThread, clueSyncList]);
+
+  // 线索面板显示状态
+  const [showClueBoard, setShowClueBoard] = useState(true);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -97,19 +120,21 @@ export const StoryChatPanel: React.FC<StoryChatPanelProps> = ({
   }
 
   return (
-    <>
-      <div className="h-16 border-b border-[#e7e7e7] flex items-center justify-between px-6 shrink-0 bg-[#f5f5f5]">
-        <div className="font-medium text-[16px] text-black flex items-center gap-1.5">
-          {activeSession.title}
-          {activeSession.type === 'group' && <span className="text-gray-500 text-sm font-normal">(34)</span>}
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onQuitStory}
-            className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-white transition-colors"
-          >
-            退出剧情
-          </button>
+    <div className="flex flex-1 min-h-0">
+      {/* 聊天主区域 */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="h-16 border-b border-[#e7e7e7] flex items-center justify-between px-6 shrink-0 bg-[#f5f5f5]">
+          <div className="font-medium text-[16px] text-black flex items-center gap-1.5">
+            {activeSession.title}
+            {activeSession.type === 'group' && <span className="text-gray-500 text-sm font-normal">(34)</span>}
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onQuitStory}
+              className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-white transition-colors"
+            >
+              退出剧情
+            </button>
           <button className="text-gray-600 hover:text-black">
             <MoreHorizontal size={20} />
           </button>
@@ -235,6 +260,24 @@ export const StoryChatPanel: React.FC<StoryChatPanelProps> = ({
           </button>
         </div>
       </div>
-    </>
+      </div>
+
+      {/* 线索面板 */}
+      {clueItems.length > 0 && showClueBoard && (
+        <ClueBoard
+          clues={clueItems}
+          completedCases={completedCases}
+          onClueClick={(clue) => {
+            // 找到对应的消息并触发同步
+            const msg = activeThread?.messages.find(
+              (m) => (m.clueKey || m.id) === clue.id
+            );
+            if (msg && !clue.synced && completedCases.includes(clue.caseId)) {
+              onSyncClue(msg);
+            }
+          }}
+        />
+      )}
+    </div>
   );
 };

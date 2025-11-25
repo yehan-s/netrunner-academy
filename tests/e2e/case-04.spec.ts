@@ -10,8 +10,14 @@ test.describe('case_04 - 越权访问 (IDOR)', () => {
     await page.getByTestId('task-sidebar').getByText('Mission Select').click();
     await page.getByText('越权访问 (IDOR)').click();
 
+    // 等待 Reqable 面板加载
+    await page.waitForTimeout(1000);
+
     // 切换到 Reqable Composer
     await page.getByTestId('reqable-tab-composer').click();
+    
+    // 等待 Composer 渲染
+    await page.waitForSelector('[data-testid="reqable-composer-method"]', { timeout: 5000 });
 
     // 使用 GET 方法访问篡改后的订单 ID
     await page

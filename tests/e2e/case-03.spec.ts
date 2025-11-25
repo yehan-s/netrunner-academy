@@ -19,8 +19,14 @@ test.describe('case_03 - SQL 注入基础', () => {
     // 选择 SQL 注入基础关卡
     await page.getByText('SQL 注入基础').click();
 
+    // 等待 Reqable 面板加载
+    await page.waitForTimeout(1000);
+
     // 切换到 Reqable Composer
     await page.getByTestId('reqable-tab-composer').click();
+    
+    // 等待 Composer 渲染
+    await page.waitForSelector('[data-testid="reqable-composer-method"]', { timeout: 5000 });
 
     // 构造一个基础搜索 URL（只验证链路可用，payload 细节在手动教学中覆盖）
     await page.getByTestId('reqable-composer-method').selectOption('GET');

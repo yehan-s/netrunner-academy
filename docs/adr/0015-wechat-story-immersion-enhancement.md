@@ -1,7 +1,7 @@
 # ADR 0015：微信剧情沉浸感与教学体验增强
 
 ## 状态
-Proposed（待评审）
+Accepted（已实现 P0 + P1）
 
 ## 背景
 - 当前微信剧情模式已实现基础功能：消息推进、关卡 gating、线索同步、localStorage 持久化。
