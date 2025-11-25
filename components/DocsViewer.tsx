@@ -29,6 +29,9 @@ const DOCS_MENU = [
       { id: 'composer', title: 'Composer 完全指南' },
       { id: 'breakpoints', title: 'Breakpoints 断点调试' },
       { id: 'rewriting', title: '重写规则 (Rewrite Rules)' },
+      { id: 'throttle', title: 'Network Throttle 限速' },
+      { id: 'access-control', title: 'Access Control 访问控制' },
+      { id: 'turbo-mode', title: 'Turbo Mode 加速模式' },
     ]
   },
   {
@@ -2851,6 +2854,167 @@ $stmt->execute([$username]);`}
                 <ChevronRight size={18} />
                 返回学习路线图
               </button>
+            </div>
+          </div>
+        );
+
+      case 'throttle':
+        return (
+          <div key="throttle" className={`space-y-6 doc-content ${isTransitioning ? 'doc-content-enter' : ''}`}>
+            <h1 className="text-4xl font-bold text-white mb-4">🌐 Network Throttle 网络限速</h1>
+            <p className="text-lg text-gray-300 leading-relaxed">
+              Network Throttle 允许你模拟不同的网络环境，测试应用在弱网条件下的表现。
+            </p>
+
+            <div className="bg-[#161b22] border border-gray-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">🎯 使用场景</h2>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex items-start gap-3">
+                  <span className="text-green-400 mt-1">•</span>
+                  <span><strong>弱网测试</strong> - 模拟 3G/4G 网络，测试加载性能</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-400 mt-1">•</span>
+                  <span><strong>超时调试</strong> - 增加延迟，触发超时逻辑</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-400 mt-1">•</span>
+                  <span><strong>离线模式</strong> - 100% 丢包，测试离线功能</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-[#161b22] border border-gray-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">⚙️ 预设配置</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left py-2 text-gray-400">配置</th>
+                      <th className="text-left py-2 text-gray-400">下载速度</th>
+                      <th className="text-left py-2 text-gray-400">延迟</th>
+                      <th className="text-left py-2 text-gray-400">丢包率</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    <tr className="border-b border-gray-800"><td className="py-2">Slow 3G</td><td>400 Kbps</td><td>2000ms</td><td>0%</td></tr>
+                    <tr className="border-b border-gray-800"><td className="py-2">Fast 3G</td><td>1.5 Mbps</td><td>562ms</td><td>0%</td></tr>
+                    <tr className="border-b border-gray-800"><td className="py-2">Slow 4G</td><td>4 Mbps</td><td>170ms</td><td>0%</td></tr>
+                    <tr className="border-b border-gray-800"><td className="py-2">Offline</td><td>0</td><td>0</td><td>100%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+              <h3 className="text-lg font-bold text-blue-400 mb-2">💡 实战技巧</h3>
+              <p className="text-gray-300">
+                启用限速后，响应头会添加 <code className="bg-black/30 px-2 py-0.5 rounded">x-throttle-profile</code> 字段，
+                显示当前使用的限速配置名称。
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'access-control':
+        return (
+          <div key="access-control" className={`space-y-6 doc-content ${isTransitioning ? 'doc-content-enter' : ''}`}>
+            <h1 className="text-4xl font-bold text-white mb-4">🛡️ Access Control 访问控制</h1>
+            <p className="text-lg text-gray-300 leading-relaxed">
+              Access Control 允许你配置请求的允许/拒绝规则，模拟防火墙和访问控制策略。
+            </p>
+
+            <div className="bg-[#161b22] border border-gray-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">🎯 使用场景</h2>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex items-start gap-3">
+                  <span className="text-red-400 mt-1">•</span>
+                  <span><strong>阻断广告请求</strong> - 屏蔽广告域名</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-400 mt-1">•</span>
+                  <span><strong>模拟 WAF</strong> - 测试请求被拦截的场景</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-400 mt-1">•</span>
+                  <span><strong>白名单模式</strong> - 只允许特定域名</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-[#161b22] border border-gray-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">📝 规则语法</h2>
+              <ul className="space-y-2 text-gray-300 font-mono text-sm">
+                <li><code className="text-green-400">*.example.com</code> - 匹配所有子域名</li>
+                <li><code className="text-green-400">api.*.com</code> - 匹配 api 开头的域名</li>
+                <li><code className="text-green-400">192.168.*.*</code> - 匹配 IP 段</li>
+              </ul>
+            </div>
+
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+              <h3 className="text-lg font-bold text-red-400 mb-2">⚠️ 阻断效果</h3>
+              <p className="text-gray-300">
+                被阻断的请求将返回 <code className="bg-black/30 px-2 py-0.5 rounded">403</code> 状态码，
+                响应头包含 <code className="bg-black/30 px-2 py-0.5 rounded">x-blocked-by: access-control</code>。
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'turbo-mode':
+        return (
+          <div key="turbo-mode" className={`space-y-6 doc-content ${isTransitioning ? 'doc-content-enter' : ''}`}>
+            <h1 className="text-4xl font-bold text-white mb-4">⚡ Turbo Mode 加速模式</h1>
+            <p className="text-lg text-gray-300 leading-relaxed">
+              Turbo Mode 通过阻止不必要的资源加载来加速页面，同时帮助你专注于核心 API 调试。
+            </p>
+
+            <div className="bg-[#161b22] border border-gray-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">🚀 可阻止的资源类型</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 text-gray-300">
+                  <span className="text-2xl">🖼️</span>
+                  <span><strong>Images</strong> - 图片资源</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300">
+                  <span className="text-2xl">📜</span>
+                  <span><strong>Scripts</strong> - JavaScript 文件</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300">
+                  <span className="text-2xl">🔤</span>
+                  <span><strong>Fonts</strong> - 字体文件</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300">
+                  <span className="text-2xl">🎨</span>
+                  <span><strong>Stylesheets</strong> - CSS 样式</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#161b22] border border-gray-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">🎯 使用场景</h2>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-400 mt-1">•</span>
+                  <span><strong>API 调试</strong> - 屏蔽静态资源，只看 XHR/Fetch</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-400 mt-1">•</span>
+                  <span><strong>流量节省</strong> - 在弱网下减少数据传输</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-400 mt-1">•</span>
+                  <span><strong>性能分析</strong> - 测试无图片/无 JS 的页面表现</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+              <h3 className="text-lg font-bold text-purple-400 mb-2">💡 提示</h3>
+              <p className="text-gray-300">
+                被阻止的资源会显示 <code className="bg-black/30 px-2 py-0.5 rounded">x-blocked-by: turbo-mode</code> 响应头，
+                状态码为 0 (请求被取消)。
+              </p>
             </div>
           </div>
         );
