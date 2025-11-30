@@ -42,7 +42,7 @@ export const TrafficDetail: React.FC<TrafficDetailProps> = ({
   const resHeadersCount = Object.keys(selectedRequest.responseHeaders || {}).length;
 
   return (
-    <div className="w-[45%] flex flex-col min-w-0 bg-[#1e1e1e]">
+    <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
       {/* TOP: Request Detail */}
       <div className="flex-1 flex flex-col min-h-0 border-b border-[#3c3c3c]">
         {/* Tab Bar - Reqable 风格 */}

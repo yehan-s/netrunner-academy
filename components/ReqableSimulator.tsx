@@ -26,6 +26,9 @@ import { ProxyStatusBar } from './reqable/ProxyStatusBar';
 import { TabBar, Tab } from './reqable/TabBar';
 import { FilterTabs } from './reqable/FilterTabs';
 import { StatusBar } from './reqable/StatusBar';
+import { Explorer, useExplorerActions } from './reqable/Explorer';
+import { CollectionManager, SaveToCollectionDialog, CollectionItem } from './reqable/CollectionManager';
+import { Toolbox } from './reqable/Toolbox';
 import {
   Play, Shield, Trash2, Search, Layers, PenTool, Settings, Code, Highlighter,
   ChevronRight, Star, Bookmark, Globe, FolderTree,
@@ -88,7 +91,41 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
   onImportRequests
 }) => {
   // --- State ---
-  const [activeSidebarItem, setActiveSidebarItem] = useState<'traffic' | 'collections' | 'history' | 'script'>('traffic');
+  const [activeSidebarItem, setActiveSidebarItem] = useState<'traffic' | 'collections' | 'history' | 'script' | 'toolbox'>('traffic');
+
+  // Panel resize state
+  const [leftPanelWidth, setLeftPanelWidth] = useState(55); // percentage
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle panel resize
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+      setLeftPanelWidth(Math.min(Math.max(newWidth, 20), 80)); // Clamp between 20% and 80%
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   // Tabs
   const [tabs, setTabs] = useState<{ id: string, type: 'traffic' | 'composer' | 'script', title: string, data?: any }[]>([
@@ -100,6 +137,12 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
   const [filter, setFilter] = useState<ContentFilter>('All');
   const [searchText, setSearchText] = useState('');
   const [isRecording, setIsRecording] = useState(true);
+
+  // Explorer State
+  const [showExplorer, setShowExplorer] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [selectedBookmark, setSelectedBookmark] = useState<string | null>(null);
+  const { addBookmarkFromUrl, addFavoriteFromRequest } = useExplorerActions();
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, reqId: string } | null>(null);
@@ -135,6 +178,9 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
   // Script Editor Dialog State
   const [showScriptEditor, setShowScriptEditor] = useState(false);
+
+  // Save to Collection Dialog State
+  const [saveToCollectionRequest, setSaveToCollectionRequest] = useState<NetworkRequest | null>(null);
 
   // Highlight Rules Dialog State
   const [showHighlightRules, setShowHighlightRules] = useState(false);
@@ -247,10 +293,30 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
   // Filter Logic
   const filteredRequests = useMemo(() => {
     return requests.filter(req => {
+      // Search filter
       if (searchText) {
         const lower = searchText.toLowerCase();
         if (!req.url.toLowerCase().includes(lower) && !req.method.toLowerCase().includes(lower)) return false;
       }
+      
+      // Domain filter (from Explorer)
+      if (selectedDomain) {
+        try {
+          const hostname = new URL(req.url).hostname;
+          if (hostname !== selectedDomain) return false;
+        } catch {
+          return false;
+        }
+      }
+      
+      // Bookmark filter (URL pattern)
+      if (selectedBookmark) {
+        const pattern = selectedBookmark.replace(/\*/g, '.*').replace(/\?/g, '.');
+        const regex = new RegExp(`^${pattern}$`, 'i');
+        if (!regex.test(req.url)) return false;
+      }
+      
+      // Content type filters
       if (filter === 'All') return true;
       if (filter === 'Http') return req.url.startsWith('http:') && !req.url.startsWith('ws');
       if (filter === 'Https') return req.url.startsWith('https:') && !req.url.startsWith('wss');
@@ -261,7 +327,7 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
       if (filter === '图片') return (req.responseHeaders['content-type'] || '').includes('image');
       return true;
     });
-  }, [requests, filter, searchText]);
+  }, [requests, filter, searchText, selectedDomain, selectedBookmark]);
 
   // --- UI Helpers ---
 
@@ -298,14 +364,27 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
       {/* 1. Activity Bar (Left Slim Sidebar) */}
       <div className="w-[50px] bg-[#252526] flex flex-col items-center py-3 border-r border-[#3c3c3c] shrink-0 z-20">
-        <SidebarIcon icon={Activity} active={activeSidebarItem === 'traffic'} onClick={() => setActiveSidebarItem('traffic')} color="#4ec9b0" />
-        <SidebarIcon icon={FolderTree} active={activeSidebarItem === 'collections'} onClick={() => setActiveSidebarItem('collections')} color="#569cd6" />
-        <SidebarIcon icon={History} active={activeSidebarItem === 'history'} onClick={() => setActiveSidebarItem('history')} color="#ce9178" />
-        <SidebarIcon icon={Code} active={activeSidebarItem === 'script'} onClick={() => setActiveSidebarItem('script')} color="#4ec9b0" />
+        <SidebarIcon icon={Activity} active={activeSidebarItem === 'traffic' && !showExplorer} onClick={() => { setActiveSidebarItem('traffic'); setShowExplorer(false); }} color="#4ec9b0" />
+        <SidebarIcon icon={Globe} active={showExplorer} onClick={() => setShowExplorer(!showExplorer)} color="#569cd6" />
+        <SidebarIcon icon={FolderTree} active={activeSidebarItem === 'collections'} onClick={() => { setActiveSidebarItem('collections'); setShowExplorer(false); }} color="#dcb67a" />
+        <SidebarIcon icon={History} active={activeSidebarItem === 'history'} onClick={() => { setActiveSidebarItem('history'); setShowExplorer(false); }} color="#ce9178" />
+        <SidebarIcon icon={Code} active={activeSidebarItem === 'script'} onClick={() => { setActiveSidebarItem('script'); setShowExplorer(false); }} color="#4ec9b0" />
+        <SidebarIcon icon={Wrench} active={activeSidebarItem === 'toolbox'} onClick={() => { setActiveSidebarItem('toolbox'); setShowExplorer(false); }} color="#c586c0" />
         <div className="flex-1" />
-        <SidebarIcon icon={Wrench} active={false} onClick={() => {}} />
         <SidebarIcon icon={Settings} active={false} onClick={() => setShowSSLDialog(true)} />
       </div>
+
+      {/* Explorer Panel */}
+      {showExplorer && activeSidebarItem === 'traffic' && (
+        <Explorer
+          requests={requests}
+          onSelectRequest={(id) => setSelectedRequestId(id)}
+          onFilterByDomain={setSelectedDomain}
+          onFilterByBookmark={setSelectedBookmark}
+          selectedDomain={selectedDomain}
+          selectedBookmark={selectedBookmark}
+        />
+      )}
 
       {/* 1.5 Side Panel (Explorer) */}
       {activeSidebarItem !== 'traffic' && (
@@ -314,6 +393,7 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
             {activeSidebarItem === 'collections' && 'Collections'}
             {activeSidebarItem === 'history' && 'History'}
             {activeSidebarItem === 'script' && 'Scripts'}
+            {activeSidebarItem === 'toolbox' && 'Toolbox'}
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
@@ -375,6 +455,10 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
             {activeSidebarItem === 'history' && (
               <div className="text-xs text-gray-500 text-center mt-4">No history yet</div>
+            )}
+
+            {activeSidebarItem === 'toolbox' && (
+              <div className="text-xs text-gray-500 text-center mt-4">Select a tool from the main panel</div>
             )}
           </div>
         </div>
@@ -484,10 +568,13 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
             />
 
             {/* Traffic List & Details Split */}
-            <div className="flex-1 flex min-h-0">
+            <div ref={containerRef} className="flex-1 flex min-h-0 relative">
 
               {/* LEFT PANE: Request List Table */}
-              <div className={`flex flex-col min-w-0 border-r border-[#3c3c3c] ${selectedRequest ? 'w-[55%]' : 'flex-1'}`}>
+              <div 
+                className="flex flex-col min-w-0 border-r border-[#3c3c3c]"
+                style={{ width: selectedRequest ? `${leftPanelWidth}%` : '100%' }}
+              >
                 <TrafficList
                   filteredRequests={filteredRequests}
                   selectedRequestId={selectedRequestId}
@@ -502,6 +589,15 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
                   formatTime={formatTime}
                 />
               </div>
+
+              {/* RESIZE HANDLE */}
+              {selectedRequest && (
+                <div
+                  onMouseDown={handleMouseDown}
+                  className={`w-1 cursor-col-resize hover:bg-[#4ec9b0]/50 active:bg-[#4ec9b0] transition-colors z-10 ${isDragging ? 'bg-[#4ec9b0]' : 'bg-transparent'}`}
+                  style={{ marginLeft: '-2px', marginRight: '-2px' }}
+                />
+              )}
 
               {/* RIGHT PANE: Inspector (Details) */}
               {selectedRequest && (
@@ -529,6 +625,7 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
           <Composer
             onSend={onComposerSend}
             onSwitchToTraffic={() => setActiveTabId('tab-traffic')}
+            onSaveToCollection={(req) => setSaveToCollectionRequest(req)}
             getMethodColor={getMethodColor}
             initialMethod={composerInitialData.method}
             initialUrl={composerInitialData.url}
@@ -564,33 +661,24 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
               <span className="font-bold text-[#cccccc] text-sm">Scripting Console</span>
               <button
                 onClick={() => setShowScriptEditor(true)}
-                className="px-3 py-1 bg-[#333] hover:bg-[#444] text-xs text-white rounded border border-[#444] flex items-center gap-2"
+                className="px-3 py-1 bg-[#0e639c] hover:bg-[#1177bb] text-xs text-white rounded border border-[#0e639c] flex items-center gap-2"
               >
                 <Plus size={12} /> Manage Scripts
               </button>
             </div>
-            <div className="p-4 flex-1 overflow-auto">
-              <div className="text-xs text-gray-500 mb-3 font-medium uppercase tracking-wider">Active Scripts</div>
-              <div className="flex items-center gap-3 p-3 bg-[#252526] rounded border border-[#333] hover:border-[#4ec9b0]/50 transition-colors group">
-                <div className="bg-[#2d2d2d] p-2 rounded text-[#4ec9b0] group-hover:bg-[#4ec9b0]/10">
-                  <Code size={18} />
+            <div className="p-4 flex-1 overflow-auto flex flex-col items-center justify-center">
+              <div className="text-center">
+                <Code size={48} className="text-[#3c3c3c] mx-auto mb-4" />
+                <div className="text-sm text-gray-400 mb-2">No Scripts Configured</div>
+                <div className="text-xs text-gray-500 mb-4">
+                  Scripts can intercept and modify HTTP requests/responses
                 </div>
-                <div className="flex-1">
-                  <div className="text-xs font-bold text-gray-200 flex items-center gap-2">
-                    Case_Logic_Bypass.py
-                    <span className="px-1.5 py-0.5 rounded bg-[#333] text-[10px] text-gray-400 font-mono">*.demo</span>
-                  </div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">Auto-injected by Game Engine for current level logic</div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    onChange={(e) => onRuleEnable?.('script', e.target.checked)}
-                    defaultChecked={false}
-                  />
-                  <div className="w-8 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#4ec9b0]"></div>
-                </label>
+                <button
+                  onClick={() => setShowScriptEditor(true)}
+                  className="px-4 py-2 bg-[#333] hover:bg-[#444] text-xs text-white rounded border border-[#444] flex items-center gap-2 mx-auto"
+                >
+                  <Plus size={12} /> Create Script
+                </button>
               </div>
             </div>
           </div>
@@ -599,28 +687,47 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
         {/* 2.6 Collections View */}
         {activeSidebarItem === 'collections' && (
           <div className="flex-1 flex flex-col bg-[#1e1e1e] min-h-0">
-            <div className="h-12 bg-[#252526] border-b border-[#333] flex items-center px-4 shrink-0 justify-between">
-              <span className="font-bold text-[#cccccc] text-sm">Collections</span>
-              <div className="flex gap-1">
-                <button className="p-1 hover:bg-[#333] rounded text-gray-400"><Plus size={14} /></button>
-                <button className="p-1 hover:bg-[#333] rounded text-gray-400"><MoreHorizontal size={14} /></button>
-              </div>
-            </div>
-            <div className="p-2 flex-1 overflow-auto">
-              <div className="flex items-center gap-2 p-2 hover:bg-[#2a2d2e] rounded cursor-pointer text-gray-300 text-xs">
-                <ChevronRight size={14} className="text-gray-500" />
-                <FolderTree size={14} className="text-[#dcdcaa]" />
-                <span>NetRunner API</span>
-              </div>
-              <div className="flex items-center gap-2 p-2 hover:bg-[#2a2d2e] rounded cursor-pointer text-gray-300 text-xs pl-6">
-                <span className="text-[#4ec9b0] font-bold text-[10px] w-8">GET</span>
-                <span>User Profile</span>
-              </div>
-              <div className="flex items-center gap-2 p-2 hover:bg-[#2a2d2e] rounded cursor-pointer text-gray-300 text-xs pl-6">
-                <span className="text-[#ce9178] font-bold text-[10px] w-8">POST</span>
-                <span>Login</span>
-              </div>
-            </div>
+            <CollectionManager
+              onOpenRequest={(item: CollectionItem) => {
+                // 打开请求到 Composer
+                const newTab = {
+                  id: `tab-composer-${Date.now()}`,
+                  type: 'composer' as const,
+                  title: item.name || 'Composer',
+                  data: {
+                    method: item.method,
+                    url: item.url,
+                    headers: item.headers ? Object.entries(item.headers).map(([key, value]) => ({ key, value, enabled: true })) : [],
+                    body: item.body
+                  }
+                };
+                setTabs(prev => [...prev, newTab]);
+                setActiveTabId(newTab.id);
+              }}
+              onSendRequest={(req) => {
+                // 直接发送请求
+                setComposerInitialData({
+                  method: req.method,
+                  url: req.url,
+                  body: req.requestBody,
+                  headers: req.requestHeaders ? Object.entries(req.requestHeaders).map(([key, value]) => ({ key, value, enabled: true })) : []
+                });
+                const newTab = {
+                  id: `tab-composer-${Date.now()}`,
+                  type: 'composer' as const,
+                  title: 'Quick Send'
+                };
+                setTabs(prev => [...prev, newTab]);
+                setActiveTabId(newTab.id);
+              }}
+            />
+          </div>
+        )}
+
+        {/* 2.7 Toolbox View */}
+        {activeSidebarItem === 'toolbox' && (
+          <div className="flex-1 flex flex-col bg-[#1e1e1e] min-h-0">
+            <Toolbox />
           </div>
         )}
 
@@ -628,10 +735,18 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
 
       {/* 3. Bottom Status Bar */}
       <div className="absolute bottom-0 w-full h-6 bg-[#007acc] flex items-center px-3 text-[10px] text-white z-30">
-        <span>Ready</span>
+        <span>{isRecording ? '● Recording' : '○ Paused'}</span>
+        <div className="w-px h-3 bg-white/30 mx-3" />
+        <span>{requests.length} requests</span>
+        {selectedRequest && (
+          <>
+            <div className="w-px h-3 bg-white/30 mx-3" />
+            <span>{formatSize(selectedRequest.size || 0)} / {selectedRequest.time || 0}ms</span>
+          </>
+        )}
         <div className="flex-1" />
         <span className="mr-4">UTF-8</span>
-        <span>Ln 44, Col 12</span>
+        <span>{breakpointActive ? '⬤ Breakpoint Active' : 'Breakpoint Off'}</span>
       </div>
 
       {/* Context Menu */}
@@ -696,6 +811,30 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
                   handleNewComposerTab();
                 }
               }, icon: PenTool
+            },
+            {
+              label: 'Add to Bookmark',
+              onClick: () => {
+                const req = requests.find(r => r.id === contextMenu.reqId);
+                if (req) addBookmarkFromUrl(req.url);
+              },
+              icon: Bookmark
+            },
+            {
+              label: 'Add to Favorite',
+              onClick: () => {
+                const req = requests.find(r => r.id === contextMenu.reqId);
+                if (req) addFavoriteFromRequest(req);
+              },
+              icon: Star
+            },
+            {
+              label: 'Save to Collection',
+              onClick: () => {
+                const req = requests.find(r => r.id === contextMenu.reqId);
+                if (req) setSaveToCollectionRequest(req);
+              },
+              icon: FolderTree
             },
             { label: 'Delete', onClick: () => onDropRequest(contextMenu.reqId), icon: Trash2, shortcut: 'Del' }
           ]}
@@ -780,6 +919,15 @@ export const ReqableSimulator: React.FC<ReqableSimulatorProps> = ({
       {/* Reverse Proxy Dialog */}
       {showReverseProxy && (
         <ReverseProxy onClose={() => setShowReverseProxy(false)} />
+      )}
+
+      {/* Save to Collection Dialog */}
+      {saveToCollectionRequest && (
+        <SaveToCollectionDialog
+          request={saveToCollectionRequest}
+          onClose={() => setSaveToCollectionRequest(null)}
+          onSaved={() => setSaveToCollectionRequest(null)}
+        />
       )}
 
     </div>
